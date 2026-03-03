@@ -2,6 +2,7 @@
 
 void setup() {
     Wire.begin(); 
+    int a = 5;
 }
 
 void loop() {
