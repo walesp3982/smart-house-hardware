@@ -1,46 +1,56 @@
 #include<Arduino.h>
 #include<Servo.h>
+#include<Core.h>
 
-Servo puertaPrincipal;
-Servo garaje;
-Servo dormitorio;
+const int BUFFER_SIZE = 50;
+char inputBuffer[BUFFER_SIZE];
+uint8_t bufferIndex = 0;
+
+
+DevicesController controller("ard1");
+// Creacion de dispositivos
+Gate puertaPrincipal(3, 90, Data{"Puerta principal", "P1" });
+Gate garaje(5, 90, Data{"Puerta Garaje", "P2"});
+Gate dormitorio(6, 90, Data{"Puerta Dormitorio", "P3"});
+Light luz_sala(10, Data{"Luz Sala", "L1"});
 
 void setup() {
+  // Agregamos los dispositivos
+  controller.add_device(&puertaPrincipal);
+  controller.add_device(&garaje);
+  controller.add_device(&dormitorio);
+  controller.add_device(&luz_sala);
+  // Inicializamos los dispositivos (Pines)
+  // Setting Serialización
   Serial.begin(9600);
+  Serial.print("Inicializando");
+  controller.init();
 
-  puertaPrincipal.attach(3);
-  garaje.attach(5);
-  dormitorio.attach(6);
-  Serial.print("Hola a todo el mundo");
-  pinMode(8, OUTPUT);
-  pinMode(9, OUTPUT);
-  pinMode(10, OUTPUT);
-  pinMode(11, OUTPUT);
+
+  // Configuración de puertas
 }
 
 void loop() {
-  if (Serial.available()) {
-    String comando = Serial.readStringUntil('\n');
 
-    if (comando == "PUERTA") {
-      puertaPrincipal.write(90);
+  if(Serial.available()) {
+    char c = Serial.read();
+
+    if(c == '\r') return;
+    if(c == '\n') {
+      inputBuffer[bufferIndex] = '\0';
+
+      Command cmd;
+
+      if(parseCommand(inputBuffer, cmd)) {
+        controller.execute(cmd);
+      }
+
+      bufferIndex = 0;
     }
-
-    if (comando == "GARAJE") {
-      garaje.write(90);
-    }
-
-    if (comando == "DORMITORIO") {
-      dormitorio.write(90);
-    }
-
-    if (comando == "LUZ_GARAJE") {
-      digitalWrite(8, HIGH);
-    }
-
-    if (comando == "LUZ_SALA_COCINA") {
-      digitalWrite(10, HIGH);
-      digitalWrite(11, HIGH);
+    else {
+      if(bufferIndex < BUFFER_SIZE - 1) {
+        inputBuffer[bufferIndex++] = c;
+      }
     }
   }
 }
