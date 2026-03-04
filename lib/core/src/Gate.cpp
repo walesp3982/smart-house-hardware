@@ -1,5 +1,5 @@
 #include <Core.h>
-
+#include <Messenger.h>
 /*
     Implementación de la clase Gate
 */
@@ -19,12 +19,18 @@ void Gate::activate()
 {
     motor.write(rotation);
     status = Status::ON;
+    SerialCaller::getInstance().send(
+        Message(MessageStatus::STATUS_SUCCESS, data.code, "Luz prendida")
+    );
 }
 
 void Gate::desactivate()
 {
     motor.write(0);
     status = Status::OFF;
+    SerialCaller::getInstance().send(
+        Message(MessageStatus::STATUS_ERROR, data.code, "Luz apagada")
+    );
 }
 
 void Gate::execute_command(char* order) {

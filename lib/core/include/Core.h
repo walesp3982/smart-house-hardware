@@ -1,7 +1,6 @@
 #pragma once
 #include <Arduino.h>
 #include <Servo.h>
-#include <string.h>
 
 const int MAX_DEVICES = 5;
 
