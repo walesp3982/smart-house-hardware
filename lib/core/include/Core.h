@@ -58,7 +58,6 @@ class Gate: public IDevice {
         void activate() override;
         void init() override;
         void desactivate() override;
-        void execute_command(char* order);
     private:
         Servo motor;
         uint8_t pin;

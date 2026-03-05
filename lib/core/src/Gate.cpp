@@ -20,7 +20,7 @@ void Gate::activate()
     motor.write(rotation);
     status = Status::ON;
     SerialCaller::getInstance().send(
-        Message(MessageStatus::STATUS_SUCCESS, data.code, "Luz prendida")
+        Message(MessageStatus::STATUS_SUCCESS, data.code, "Abierto correctamente")
     );
 }
 
@@ -29,10 +29,6 @@ void Gate::desactivate()
     motor.write(0);
     status = Status::OFF;
     SerialCaller::getInstance().send(
-        Message(MessageStatus::STATUS_ERROR, data.code, "Luz apagada")
+        Message(MessageStatus::STATUS_ERROR, data.code, "Cerrado correctamente")
     );
-}
-
-void Gate::execute_command(char* order) {
-    IDevice::execute_command(order);
 }
