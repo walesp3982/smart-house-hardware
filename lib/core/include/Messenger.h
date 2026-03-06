@@ -15,7 +15,9 @@ struct Message {
 
     Message(MessageStatus _status, const char* _component, const char* _text): status(_status) {
         strncpy(component, _component, sizeof(component));
+        component[sizeof(component) - 1] = '\0';
         strncpy(text, _text, sizeof(text));
+        text[sizeof(text) - 1] = '\0';
     }
 };
 
@@ -53,12 +55,19 @@ public:
     return instance;
   }
 
+  static int available() {
+    return Serial.available();
+  }
+
+  static int get_char() {
+    return Serial.read();
+  }
   void begin(long baudRate) {
     Serial.begin(baudRate);
   }
 
   void send(const Message& msg) {
-    char out[72];
+    char out[100];
     MessageBuilder::getInstance().build(out, sizeof(out), msg);
     Serial.print(out);
   }

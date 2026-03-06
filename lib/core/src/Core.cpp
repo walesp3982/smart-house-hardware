@@ -1,6 +1,6 @@
 #include "Core.h"
 #include <string.h>
-
+#include "Messenger.h"
 /*
     Helpers para Comandos:
     Ignora cualquier input que comienze con "msg:..."
@@ -72,8 +72,12 @@ DevicesController::DevicesController(const char *name)
 
 void DevicesController::add_device(IDevice *device)
 {
-    if (_size >= MAX_DEVICES)
-        return;
+    if (_size >= MAX_DEVICES) {
+        SerialCaller::getInstance().send(
+            Message(MessageStatus::STATUS_ERROR, "", "Warning:Device LIMIT ERROR")
+        );
+        return; 
+    }
     _devices[_size++] = device;
 }
 

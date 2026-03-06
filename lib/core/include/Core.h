@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-const int MAX_DEVICES = 5;
+const int MAX_DEVICES = 10;
 
 enum Status {
     ON,
