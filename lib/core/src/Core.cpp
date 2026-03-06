@@ -74,7 +74,7 @@ void DevicesController::add_device(IDevice *device)
 {
     if (_size >= MAX_DEVICES) {
         SerialCaller::getInstance().send(
-            Message(MessageStatus::STATUS_ERROR, "", "Warning:Device LIMIT ERROR")
+            Message(MessageStatus::STATUS_ERROR, "", "WARNING Device LIMIT ERROR")
         );
         return; 
     }
