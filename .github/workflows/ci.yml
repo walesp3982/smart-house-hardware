@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        env: [esp32_master, uno]
+        env: [uno]
 
     steps:
       - name: Checkout

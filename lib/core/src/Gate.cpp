@@ -17,7 +17,7 @@ void Gate::init()
 }
 void Gate::activate()
 {
-    motor.write(rotation);
+    motor.write(0);
     status = Status::ON;
     SerialCaller::getInstance().send(
         Message(MessageStatus::STATUS_SUCCESS, data.code, "Abierto correctamente")
@@ -26,7 +26,7 @@ void Gate::activate()
 
 void Gate::desactivate()
 {
-    motor.write(0);
+    motor.write(rotation);
     status = Status::OFF;
     SerialCaller::getInstance().send(
         Message(MessageStatus::STATUS_ERROR, data.code, "Cerrado correctamente")

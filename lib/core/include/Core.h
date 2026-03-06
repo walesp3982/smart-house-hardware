@@ -58,11 +58,18 @@ class Gate: public IDevice {
         void activate() override;
         void init() override;
         void desactivate() override;
-    private:
+    protected:
         Servo motor;
         uint8_t pin;
         int rotation;
 };
+
+class GateGarage: public Gate {
+    public:
+        GateGarage(uint8_t _pin, int _rotation, Data _data);
+        void activate() override;
+        void desactivate() override;
+    };
 
 class Light: public IDevice {
     public:
