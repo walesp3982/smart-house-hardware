@@ -11,7 +11,7 @@ const char* NAMING = "ard1";
 DevicesController controller(NAMING);
 // Creacion de dispositivos
 Gate puertaPrincipal(3, 90, Data{"Puerta principal", "P1" });
-Gate garaje(5, 90, Data{"Puerta Garaje", "P2"});
+GateGarage garaje(5, 90, Data{"Puerta Garaje", "P2"});
 Gate dormitorio(6, 90, Data{"Puerta Dormitorio", "P3"});
 Light luz_garage(8, Data{"Luz Garaje", "L1"});
 Light luz_dormitorio(9, Data{"Luz Dormitorio", "L2"});
