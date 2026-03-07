@@ -1,0 +1,19 @@
+{
+    "folders": [
+        {
+            "name": "arduino",
+            "path": "./arduino"
+        },
+        {
+            "name": "master_esp32",
+            "path": "./master_esp32"
+        },
+        {
+            "name": "root",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "platformio-ide.activateProjectOnTextEditorChange": true,
+    }  
+}
