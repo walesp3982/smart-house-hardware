@@ -32,7 +32,9 @@ with open('.env', 'r') as f:
     for device in config_devices.devices:
         prefix_name = device.name
         device_dict = device.model_dump(exclude={"name", "verification_code"})
-
+        type_device = device.type
         for key, value in device_dict.items():
-            key = f"{prefix_name}_{key}"
+            if key == "type":
+                value = type_device.get_values_program().cpp_value
+            key = f"{prefix_name}_{key}".upper()
             print(build_flag(key, value))
