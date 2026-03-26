@@ -14,6 +14,18 @@ class WifiSettings(BaseSettings):
 
 wifi_settings = WifiSettings()
 
+class MQTTConfig(BaseSettings):
+    HOST: str
+    PORT: int
+    USER: str = ""
+    PASSWORD: str = ""
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore",
+        env_prefix="MQTT_",
+    )
+
+mqtt_settings = MQTTConfig() # pyright: ignore[reportCallIssue]
 class DeviceValue(BaseModel):
     cpp_value: int
     web_value: str

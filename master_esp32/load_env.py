@@ -1,5 +1,5 @@
 import os
-from config import wifi_settings, load_json_device
+from config import wifi_settings, load_json_device, mqtt_settings
 
 
 def build_flag_bool(key: str, condition: bool):
@@ -26,6 +26,11 @@ with open('.env', 'r') as f:
         key = f"{prefix}{key}"
         print(build_flag(key, value))
 
+    # Carga MQTT del .env
+    for key, value in mqtt_settings.model_dump().items():
+        prefix = mqtt_settings.model_config.get("env_prefix")
+        key = f"{prefix}{key}"
+        print(build_flag(key, value))
     # Cargar flags del devices.json
     config_devices = load_json_device()
 
