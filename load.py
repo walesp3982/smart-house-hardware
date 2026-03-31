@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 from typing import Literal
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent if "__file__" in globals() else Path.cwd()
 ENV_FILE = ROOT / ".env"
 DEVICE_FILE = ROOT / "devices.json"
 ESP32_INCLUDE_DIR = ROOT / "esp32-actuator" / "include"
