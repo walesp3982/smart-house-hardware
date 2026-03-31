@@ -1,48 +1,131 @@
 #include <Arduino.h>
+#include <Wire.h>
+#include <I2C_protocol.h>
 
-int sensorMovimiento = 7;   // Pin del FC-51
-int buzzer = 8;             // Pin del buzzer
+#ifndef I2C_SLAVE_ADDR
+  #error "I2C_SLAVE_ADDR no definido en platformio.ini"
+#endif
 
-bool alarmaActiva = false;  // Estado de la alarma
+static volatile bool alarm_active = false;
+static volatile uint8_t last_cmd = 0x00;
+
+static I2CPacket response;
+
+
+// Configuración de comandos 
+
+void onReceived(int bytes) {
+  if(bytes != PKT_SIZE) {
+    while(Wire.available()) Wire.read();
+    return;
+  }
+
+  I2CPacket pkt;
+  pkt.node_id = Wire.read();
+  pkt.cmd = Wire.read();
+  pkt.data = Wire.read(); 
+  pkt.checksum = Wire.read();
+
+  if(!pkt_valid(pkt)) return;
+
+  last_cmd = pkt.cmd;
+
+  switch (pkt.cmd)
+  {
+  case CMD_SET:
+    alarm_active = (pkt.data == 0x01);
+    digitalWrite(LED_BUILTIN, alarm_active ? HIGH : LOW);
+    /* code */
+    break;
+  case CMD_STATUS:
+  case CMD_PING:
+    break;
+  default:
+    break;
+  }
+
+  response.node_id = NODE_ID;
+  response.cmd = CMD_ACK;
+  response.data = alarm_active ? 0x01 : 0x00;
+  response.checksum = pkt_checksum(response);
+}
+
+void onRequest() {
+  uint8_t* buf = (uint8_t*)&response;
+  Wire.write(buf, PKT_SIZE);
+}
+
+
+enum STATUS {
+  OFF = 0,
+  ON = 1
+};
+class BuzzerActuator {
+  private:
+    STATUS status;
+    uint8_t pin_buzzer;
+  public:
+    BuzzerActuator(uint8_t _pin_buzzer) {
+      pin_buzzer = _pin_buzzer;
+    }
+    void init() {
+      pinMode(pin_buzzer, OUTPUT);
+      desactivate();
+    }
+    void activate() {
+      digitalWrite(pin_buzzer, HIGH);
+      status = ON;
+    }
+    void desactivate() {
+      digitalWrite(pin_buzzer, LOW);
+      status = OFF;
+    }
+};
+
+class MoveSensor {
+  private:
+    uint8_t pin_sensor;
+  public:
+    MoveSensor(uint8_t _pin_sensor) {
+      pin_sensor = _pin_sensor;
+    }
+
+    void init() {
+      pinMode(pin_sensor, INPUT);
+    }
+
+    int get_value() {
+      return digitalRead(pin_sensor);
+    }
+};
+
+
+BuzzerActuator buzzer(8);
+MoveSensor move_sensor(7);
+
 String comando = "";
 
 void setup() {
-  Serial.begin(9600);
-  pinMode(sensorMovimiento, INPUT);
-  pinMode(buzzer, OUTPUT);
+  buzzer.init();
+  move_sensor.init();
+  Serial.begin(115200);
+  Wire.begin(I2C_SLAVE_ADDR);
+  Wire.onReceive(onReceived);
+  Wire.onRequest(onRequest);
+  pinMode(LED_BUILTIN, OUTPUT);
 
-  Serial.println("Sistema de alarma listo");
+  Serial.print(F("Slave listo en 0x"));
+  Serial.println(I2C_SLAVE_ADDR, HEX);
+  
 }
 
 void loop() {
-
-  // Leer comandos desde Python
-  if (Serial.available()) {
-    comando = Serial.readStringUntil('\n');
-    comando.trim();
-
-    if (comando == "ON") {
-      alarmaActiva = true;
-      Serial.println("Alarma ACTIVADA");
-    } 
-    else if (comando == "OFF") {
-      alarmaActiva = false;
-      digitalWrite(buzzer, LOW);
-      Serial.println("Alarma DESACTIVADA");
+  delay(10);
+  if (alarm_active == true) {
+    if (move_sensor.get_value() == HIGH) {
+      buzzer.activate();
+    } else if (move_sensor.get_value() == LOW) {
+      buzzer.desactivate();
     }
   }
-
-  // Funcionamiento de la alarma
-  if (alarmaActiva) {
-    int movimiento = digitalRead(sensorMovimiento);
-
-    if (movimiento == HIGH) {
-      Serial.println("INTRUSO DETECTADO");
-      digitalWrite(buzzer, HIGH);
-    } else {
-      digitalWrite(buzzer, LOW);
-    }
-  }
-
-  delay(500);
 }
