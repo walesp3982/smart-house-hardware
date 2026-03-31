@@ -26,7 +26,6 @@ void onReceived(int bytes) {
   pkt.data = Wire.read(); 
   pkt.checksum = Wire.read();
 
-  if(pkt.node_id != NODE_ID) return;
   if(!pkt_valid(pkt)) return;
 
   last_cmd = pkt.cmd;
@@ -67,7 +66,6 @@ class BuzzerActuator {
   public:
     BuzzerActuator(uint8_t _pin_buzzer) {
       pin_buzzer = _pin_buzzer;
-      desactivate();
       status = STATUS::ON;
     }
     void init() {
