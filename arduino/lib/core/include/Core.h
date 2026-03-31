@@ -1,10 +1,10 @@
 #pragma once
 #include <Arduino.h>
 #include <Servo.h>
-
+#include <I2C_protocol.h>
 const int MAX_DEVICES = 10;
 
-enum Status {
+enum class Status: uint8_t {
     ON,
     OFF
 };
@@ -31,9 +31,11 @@ class IDevice {
         virtual ~IDevice() {}
         Data get_data();
         Status get_status();
+        uint8_t get_bit_i2c();
     protected:
         Status status;
         Data data;
+        uint8_t bit_data_i2c;
 };
 
 class DevicesController {
@@ -43,7 +45,8 @@ class DevicesController {
         void init();
         void execute(Command &command);
         IDevice* get_device(int pos);
-        void list_devices();
+        void execute_i2c(I2CPacket packet);
+        uint8_t get_status_devices_i2c();
     private:
         IDevice* _devices[MAX_DEVICES];
         uint8_t _size;
@@ -54,7 +57,7 @@ class DevicesController {
 
 class Gate: public IDevice {
     public:
-        Gate(uint8_t _pin, int _rotation, Data _data);
+        Gate(uint8_t _pin, int _rotation, Data _data, uint8_t _bit_data_i2c);
         void activate() override;
         void init() override;
         void desactivate() override;
@@ -66,14 +69,14 @@ class Gate: public IDevice {
 
 class GateGarage: public Gate {
     public:
-        GateGarage(uint8_t _pin, int _rotation, Data _data);
+        GateGarage(uint8_t _pin, int _rotation, Data _data, uint8_t _bit_data_i2c);
         void activate() override;
         void desactivate() override;
     };
 
 class Light: public IDevice {
     public:
-        Light(uint8_t _pin, Data _data);
+        Light(uint8_t _pin, Data _data, uint8_t _bit_data_i2c);
         void init() override;
         void activate() override;
         void desactivate() override;

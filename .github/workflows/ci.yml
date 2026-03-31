@@ -5,24 +5,32 @@ on:
   pull_request:
 
 jobs:
-  build:
+  build-arduino:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        env: [uno]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Install Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-
       - name: Install PlatformIO
         run: pip install platformio
+      - name: Build Arduino Firmware
+        working-directory: arduino
+        run: platformio run
 
-      - name: Build Firmware
-        run: pio run -e ${{ matrix.env }}
+  build-esp32:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install PlatformIO
+        run: pip install platformio
+      - name: Build ESP32 Firmware
+        working-directory: master_esp32
+        run: platformio run
