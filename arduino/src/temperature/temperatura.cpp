@@ -11,11 +11,11 @@ enum class Status : uint8_t
   ON = 1
 };
 
+
 class SensorTemperature
 {
 private:
   int pin;
-  int value; // Valor en celcius
 public:
   SensorTemperature(int _pin) : pin(_pin) {}
 
@@ -65,8 +65,14 @@ public:
   }
 };
 
+static volatile uint8_t temperature_limit = 50;
+static volatile bool enabled_automatic = true;
+static volatile int8_t value_temperature = 0;
+SensorTemperature temperature(A0);
+VentilatorActuator ventilador(8);
+
+
 #if MODE == 1
-static I2CPacket pkt;
 
 static I2CPacket response;
 bool unpack_flag(uint8_t byte) {
@@ -75,6 +81,13 @@ bool unpack_flag(uint8_t byte) {
 
 uint8_t unpack_value(uint8_t byte) {
   return byte & 0x7F;
+}
+
+void setResponse() {
+  response.node_id = NODE_ID;
+  response.data = (uint8_t) value_temperature;
+  response.cmd = CMD_ACK;
+  response.checksum = pkt_checksum(response);
 }
 
 void onReceived(int bytes) {
@@ -106,27 +119,18 @@ void onReceived(int bytes) {
   default:
     break;
   }
-
-  response.node_id = NODE_ID;
-  response.data = (uint8_t)  value_temperature;
-  response.cmd = CMD_ACK;
-  response.checksum = pkt_checksum(response);
-  
-
-
 }
 
+
+
 void onRequest() {
+  setResponse();
   uint8_t* buf = (uint8_t*)&response;
   Wire.write(buf,PKT_SIZE);
 }
 #endif
 
-static volatile int temperature_limit = 50;
-static volatile bool enabled_automatic = true;
-static int8_t value_temperature = 0;
-SensorTemperature temperature(A0);
-VentilatorActuator ventilador(8);
+
 
 String comando = "";
 
