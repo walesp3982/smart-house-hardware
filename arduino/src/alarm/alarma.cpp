@@ -27,6 +27,7 @@ void onReceived(int bytes) {
   pkt.checksum = Wire.read();
 
   if(!pkt_valid(pkt)) return;
+  if(pkt.node_id != NODE_ID) return;
 
   last_cmd = pkt.cmd;
 

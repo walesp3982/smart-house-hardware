@@ -45,14 +45,16 @@ Light luz_cocina(11, Data{"Luz cocina", "L3"}, BIT_LUZ_COCINA);
     pkt.checksum = Wire.read();
 
     if(pkt.node_id != NODE_ID) return;
+    if(!pkt_valid(pkt)) return;
 
     switch (pkt.cmd)
     {
     case CMD_SET:
       controller.execute_i2c(pkt);
-      /* code */
       break;
-    
+    case CMD_STATUS:
+    case CMD_PING:
+      break;
     default:
       break;
     }

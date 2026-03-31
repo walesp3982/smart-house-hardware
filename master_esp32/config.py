@@ -15,8 +15,8 @@ class WifiSettings(BaseSettings):
 wifi_settings = WifiSettings()
 
 class MQTTConfig(BaseSettings):
-    HOST: str
-    PORT: int
+    HOST: str = "localhost"
+    PORT: int = "1883"
     USER: str = ""
     PASSWORD: str = ""
     model_config = SettingsConfigDict(
