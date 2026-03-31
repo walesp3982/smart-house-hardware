@@ -9,6 +9,10 @@
             "path": "./master_esp32"
         },
         {
+            "name": "esp32-actuator",
+            "path": "./esp32-actuator"
+        },
+                {
             "name": "root",
             "path": "."
         }
