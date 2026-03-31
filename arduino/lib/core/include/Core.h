@@ -46,7 +46,7 @@ class DevicesController {
         void execute(Command &command);
         IDevice* get_device(int pos);
         void execute_i2c(I2CPacket packet);
-        uint8_t get_status_devices();
+        uint8_t get_status_devices_i2c();
     private:
         IDevice* _devices[MAX_DEVICES];
         uint8_t _size;

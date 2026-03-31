@@ -147,7 +147,7 @@ void DevicesController::execute_i2c(I2CPacket packet) {
 }
 
 
-uint8_t DevicesController::get_status_devices() {
+uint8_t DevicesController::get_status_devices_i2c() {
     uint8_t data = 0b00000000;
     for(int i = 0; i < _size; i++) {
         IDevice* device = get_device(i);

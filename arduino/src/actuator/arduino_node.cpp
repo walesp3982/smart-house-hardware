@@ -2,6 +2,8 @@
 //#include<Servo.h>
 #include "Core.h"
 #include "Messenger.h"
+#include "Wire.h"
+
 const int BUFFER_SIZE = 50;
 char inputBuffer[BUFFER_SIZE];
 uint8_t bufferIndex = 0;
@@ -28,7 +30,44 @@ Light luz_dormitorio(9, Data{"Luz Dormitorio", "L2"}, BIT_LUZ_DORMITORIO);
 Light luz_sala(10, Data{"Luz sala", "L3"}, BIT_LUZ_SALA);
 Light luz_cocina(11, Data{"Luz cocina", "L3"}, BIT_LUZ_COCINA);
 
+#if MODE == 1
+  static I2CPacket response;
+  void onReceived(int bytes) {
+    if(bytes != PKT_SIZE) {
+      while(Wire.available()) Wire.read();
+      return;
+    }
 
+    I2CPacket pkt;
+    pkt.node_id = Wire.read();
+    pkt.cmd = Wire.read();
+    pkt.data = Wire.read();
+    pkt.checksum = Wire.read();
+
+    if(pkt.node_id != NODE_ID) return;
+
+    switch (pkt.cmd)
+    {
+    case CMD_SET:
+      controller.execute_i2c(pkt);
+      /* code */
+      break;
+    
+    default:
+      break;
+    }
+
+    response.node_id = NODE_ID;
+    response.cmd = CMD_ACK;
+    response.data = controller.get_status_devices_i2c();
+    response.checksum = pkt_checksum(response);
+  }
+
+  void onRequest() {
+    uint8_t* buf = (uint8_t*)&response;
+    Wire.write(buf, PKT_SIZE);
+  }
+#endif
 void setup() {
   // Setting Serialización
   MessageBuilder::getInstance().setDevice(NAMING);
@@ -45,29 +84,40 @@ void setup() {
   
   // Configuración de pines
   controller.init();
+
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  #if MODE == 1
+    Wire.begin(I2C_SLAVE_ADDR);
+    Wire.onReceive(onReceived);
+    Wire.onRequest(onRequest);
+    digitalWrite(LED_BUILTIN, HIGH);
+  #endif 
+  pinMode(LED_BUILTIN, LOW);
 }
 
 void loop() {
+  #if MODE == 0
+    if(SerialCaller::available()) {
+      char c = SerialCaller::get_char();
 
-  if(SerialCaller::available()) {
-    char c = SerialCaller::get_char();
+      if(c == '\r') return;
+      if(c == '\n') {
+        inputBuffer[bufferIndex] = '\0';
 
-    if(c == '\r') return;
-    if(c == '\n') {
-      inputBuffer[bufferIndex] = '\0';
+        Command cmd;
 
-      Command cmd;
+        if(parseCommand(inputBuffer, cmd)) {
+          controller.execute(cmd);
+        }
 
-      if(parseCommand(inputBuffer, cmd)) {
-        controller.execute(cmd);
+        bufferIndex = 0;
       }
-
-      bufferIndex = 0;
-    }
-    else {
-      if(bufferIndex < BUFFER_SIZE - 1) {
-        inputBuffer[bufferIndex++] = c;
+      else {
+        if(bufferIndex < BUFFER_SIZE - 1) {
+          inputBuffer[bufferIndex++] = c;
+        }
       }
     }
-  }
+    #endif
 }
