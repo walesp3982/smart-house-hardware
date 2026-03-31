@@ -4,8 +4,9 @@
     Implementación de Light : IDevice
 */
 
-Light::Light(uint8_t _pin, Data _data) : pin(_pin)
+Light::Light(uint8_t _pin, Data _data, uint8_t _i2c_command) : pin(_pin)
 {
+    bit_data_i2c = _i2c_command;
     data = _data;
 }
 

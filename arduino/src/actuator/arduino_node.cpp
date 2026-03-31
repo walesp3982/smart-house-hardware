@@ -10,13 +10,23 @@ uint8_t bufferIndex = 0;
 const char* NAMING = "ard1";
 DevicesController controller(NAMING);
 // Creacion de dispositivos
-Gate puertaPrincipal(3, 90, Data{"Puerta principal", "P1" });
-GateGarage garaje(5, 90, Data{"Puerta Garaje", "P2"});
-Gate dormitorio(6, 90, Data{"Puerta Dormitorio", "P3"});
-Light luz_garage(8, Data{"Luz Garaje", "L1"});
-Light luz_dormitorio(9, Data{"Luz Dormitorio", "L2"});
-Light luz_sala(10, Data{"Luz sala", "L3"});
-Light luz_cocina(11, Data{"Luz cocina", "L3"});
+// Declaración de bits para cada dispositivo
+constexpr uint8_t BIT_PUERTA_PRINCIPAL = 0;
+constexpr uint8_t BIT_COMPUERTA_GARAGE = 1;
+constexpr uint8_t BIT_PUERTA_DORMITORIO = 2;
+constexpr uint8_t BIT_LUZ_GARAGE = 3;
+constexpr uint8_t BIT_LUZ_DORMITORIO = 4;
+constexpr uint8_t BIT_LUZ_SALA = 5;
+constexpr uint8_t BIT_LUZ_COCINA = 6;
+
+
+Gate puertaPrincipal(3, 90, Data{"Puerta principal", "P1" }, BIT_PUERTA_PRINCIPAL);
+GateGarage garaje(5, 90, Data{"Puerta Garaje", "P2"}, BIT_COMPUERTA_GARAGE);
+Gate dormitorio(6, 90, Data{"Puerta Dormitorio", "P3"}, BIT_PUERTA_DORMITORIO);
+Light luz_garage(8, Data{"Luz Garaje", "L1"}, BIT_LUZ_GARAGE);
+Light luz_dormitorio(9, Data{"Luz Dormitorio", "L2"}, BIT_LUZ_DORMITORIO);
+Light luz_sala(10, Data{"Luz sala", "L3"}, BIT_LUZ_SALA);
+Light luz_cocina(11, Data{"Luz cocina", "L3"}, BIT_LUZ_COCINA);
 
 
 void setup() {
