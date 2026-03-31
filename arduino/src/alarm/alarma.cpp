@@ -26,6 +26,7 @@ void onReceived(int bytes) {
   pkt.data = Wire.read(); 
   pkt.checksum = Wire.read();
 
+  if(pkt.node_id != NODE_ID) return;
   if(!pkt_valid(pkt)) return;
 
   last_cmd = pkt.cmd;
@@ -35,7 +36,6 @@ void onReceived(int bytes) {
   case CMD_SET:
     alarm_active = (pkt.data == 0x01);
     digitalWrite(LED_BUILTIN, alarm_active ? HIGH : LOW);
-    /* code */
     break;
   case CMD_STATUS:
   case CMD_PING:
@@ -56,7 +56,7 @@ void onRequest() {
 }
 
 
-enum STATUS {
+enum class STATUS : uint8_t {
   OFF = 0,
   ON = 1
 };
@@ -67,6 +67,8 @@ class BuzzerActuator {
   public:
     BuzzerActuator(uint8_t _pin_buzzer) {
       pin_buzzer = _pin_buzzer;
+      desactivate();
+      status = STATUS::ON;
     }
     void init() {
       pinMode(pin_buzzer, OUTPUT);
@@ -74,11 +76,11 @@ class BuzzerActuator {
     }
     void activate() {
       digitalWrite(pin_buzzer, HIGH);
-      status = ON;
+      status = STATUS::ON;
     }
     void desactivate() {
       digitalWrite(pin_buzzer, LOW);
-      status = OFF;
+      status = STATUS::OFF;
     }
 };
 
@@ -116,16 +118,20 @@ void setup() {
 
   Serial.print(F("Slave listo en 0x"));
   Serial.println(I2C_SLAVE_ADDR, HEX);
-  
 }
 
 void loop() {
   delay(10);
-  if (alarm_active == true) {
+  noInterrupts();
+  bool active = alarm_active;
+  interrupts();
+  if (active) {
     if (move_sensor.get_value() == HIGH) {
       buzzer.activate();
     } else if (move_sensor.get_value() == LOW) {
       buzzer.desactivate();
     }
+  } else {
+    buzzer.desactivate();
   }
 }
