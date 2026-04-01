@@ -1,4 +1,3 @@
-import os
 from config import wifi_settings, load_json_device, mqtt_settings
 
 

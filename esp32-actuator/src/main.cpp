@@ -5,7 +5,6 @@
 #include <ArduinoJson.h>
 #include "i2c_protocol.h"
 #include "generated_devices.h"
-#include "generated_env.h"
 
 enum class DeviceType : uint8_t {
     Light,
