@@ -5,8 +5,8 @@
 const int MAX_DEVICES = 10;
 
 enum class Status: uint8_t {
-    ON,
-    OFF
+    OFF=0,
+    ON=1
 };
 
 struct Command {

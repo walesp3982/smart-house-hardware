@@ -95,7 +95,6 @@ void setup() {
     Wire.onRequest(onRequest);
     digitalWrite(LED_BUILTIN, HIGH);
   #endif 
-  pinMode(LED_BUILTIN, LOW);
 }
 
 void loop() {

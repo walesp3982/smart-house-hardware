@@ -1,52 +1,9 @@
 #include <Arduino.h>
 #include <I2C_protocol.h>
 #include <Wire.h>
+#include <Sensors.h>
+#include <Actuators.h>
 
-enum class Status : uint8_t {
-  OFF = 0,
-  ON = 1
-};
-
-class SensorTemperature {
-private:
-  int pin;
-public:
-  SensorTemperature(int _pin) : pin(_pin) {}
-  void init() {
-    pinMode(pin, INPUT);
-  }
-  int8_t get_status() {
-    int value = analogRead(pin);
-    float voltaje = value * (5.0 / 1023.0);
-    float temperatura = voltaje * 100;
-    if (temperatura > INT8_MAX) temperatura = INT8_MAX;
-    if (temperatura < INT8_MIN) temperatura = INT8_MIN;
-    return static_cast<int8_t>(temperatura);
-  }
-};
-
-class VentilatorActuator {
-private:
-  int pin;
-  Status status;
-public:
-  VentilatorActuator(int _pin) : pin(_pin), status(Status::OFF) {}
-  void init() {
-    pinMode(pin, OUTPUT);
-    desactivate();
-  }
-  void activate() {
-    digitalWrite(pin, HIGH);
-    status = Status::ON;
-  }
-  void desactivate() {
-    digitalWrite(pin, LOW);
-    status = Status::OFF;
-  }
-  Status get_status() const {
-    return status;
-  }
-};
 
 static volatile uint8_t temperature_limit = 50;
 static volatile bool enabled_automatic = true;
@@ -57,7 +14,7 @@ VentilatorActuator ventilador(8);
 
 #if MODE == 1
 static I2CPacket response;
-
+ 
 bool unpack_flag(uint8_t byte) {
   return (byte >> 7) & 0x01;
 }
@@ -73,18 +30,6 @@ void apply_temperature_command(uint8_t data) {
 
   if (!enabled_automatic) {
     if (request_on) {
-      ventilador.activate();
-      fan_state = Status::ON;
-    } else {
-      ventilador.desactivate();
-      fan_state = Status::OFF;
-    }
-  }
-}
-
-void update_fan() {
-  if (enabled_automatic) {
-    if (value_temperature > temperature_limit) {
       ventilador.activate();
       fan_state = Status::ON;
     } else {
@@ -137,7 +82,7 @@ void onRequest() {
   uint8_t* buf = reinterpret_cast<uint8_t*>(&response);
   Wire.write(buf, PKT_SIZE);
 }
-#else
+#endif
 void update_fan() {
   if (enabled_automatic) {
     if (value_temperature > temperature_limit) {
@@ -149,7 +94,6 @@ void update_fan() {
     }
   }
 }
-#endif
 
 void setup() {
   Serial.begin(9600);

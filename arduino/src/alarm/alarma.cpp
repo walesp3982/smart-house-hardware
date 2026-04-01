@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <I2C_protocol.h>
+#include <Actuators.h>
+#include <Sensors.h>
 
 #ifndef I2C_SLAVE_ADDR
   #error "I2C_SLAVE_ADDR no definido en platformio.ini"
@@ -13,7 +15,12 @@ static I2CPacket response;
 
 
 // Configuración de comandos 
-
+void setResponse() {
+  response.node_id = NODE_ID;
+  response.cmd = CMD_ACK;
+  response.data = alarm_active ? 0x01 : 0x00;
+  response.checksum = pkt_checksum(response);
+}
 void onReceived(int bytes) {
   if(bytes != PKT_SIZE) {
     while(Wire.available()) Wire.read();
@@ -44,62 +51,14 @@ void onReceived(int bytes) {
     break;
   }
 
-  response.node_id = NODE_ID;
-  response.cmd = CMD_ACK;
-  response.data = alarm_active ? 0x01 : 0x00;
-  response.checksum = pkt_checksum(response);
+  setResponse();
 }
 
 void onRequest() {
+  setResponse();
   uint8_t* buf = (uint8_t*)&response;
   Wire.write(buf, PKT_SIZE);
 }
-
-
-enum class STATUS : uint8_t {
-  OFF = 0,
-  ON = 1
-};
-class BuzzerActuator {
-  private:
-    STATUS status;
-    uint8_t pin_buzzer;
-  public:
-    BuzzerActuator(uint8_t _pin_buzzer) {
-      pin_buzzer = _pin_buzzer;
-      status = STATUS::ON;
-    }
-    void init() {
-      pinMode(pin_buzzer, OUTPUT);
-      desactivate();
-    }
-    void activate() {
-      digitalWrite(pin_buzzer, HIGH);
-      status = STATUS::ON;
-    }
-    void desactivate() {
-      digitalWrite(pin_buzzer, LOW);
-      status = STATUS::OFF;
-    }
-};
-
-class MoveSensor {
-  private:
-    uint8_t pin_sensor;
-  public:
-    MoveSensor(uint8_t _pin_sensor) {
-      pin_sensor = _pin_sensor;
-    }
-
-    void init() {
-      pinMode(pin_sensor, INPUT);
-    }
-
-    int get_value() {
-      return digitalRead(pin_sensor);
-    }
-};
-
 
 BuzzerActuator buzzer(8);
 MoveSensor move_sensor(7);
@@ -107,9 +66,14 @@ MoveSensor move_sensor(7);
 String comando = "";
 
 void setup() {
+  // Inicialización de dispositivos
   buzzer.init();
   move_sensor.init();
+
+  // Inicialización del puerto serial
   Serial.begin(115200);
+
+  // Iniciación de I2C como esclavo
   Wire.begin(I2C_SLAVE_ADDR);
   Wire.onReceive(onReceived);
   Wire.onRequest(onRequest);
