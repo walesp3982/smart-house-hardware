@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include "i2c_protocol.h"
 #include "generated_devices.h"
+#include "builder.h"
 
 enum class DeviceType : uint8_t {
     Light,
@@ -93,36 +94,36 @@ static void publish_json(const char* topic, const JsonDocument& doc, bool retain
     mqtt.publish(topic, payload, retained);
 }
 
+static void publish_json(const char* topic, const String payload, bool retained = true) {
+    mqtt.publish(topic, payload.c_str(), retained);
+}
+
 static void publish_actuator_states(uint8_t mask) {
     for (const auto& device : BRIDGE_DEVICES) {
         if (device.type != DeviceType::Light && device.type != DeviceType::Door) {
             continue;
         }
         bool state = (mask >> device.bit) & 0x01;
-        StaticJsonDocument<64> doc;
-        doc["state"] = state ? "on" : "off";
+        
+        String payload = JsonBuilder::doorState(state);
         char topic[128];
         snprintf(topic, sizeof(topic), "/%s/value", device.uuid);
-        publish_json(topic, doc);
+        publish_json(topic, payload);
     }
 }
 
 static void publish_temperature_state(bool state, uint8_t limit_temp, bool enable_auto) {
-    StaticJsonDocument<128> doc;
-    doc["state"] = state ? "on" : "off";
-    doc["limit_temp"] = limit_temp;
-    doc["enable_auto"] = enable_auto;
+    String payload = JsonBuilder::temperatureState(state, limit_temp, enable_auto);
     char topic[128];
     snprintf(topic, sizeof(topic), "/%s/value", UUID_SENSOR_TEMPERATURE);
-    publish_json(topic, doc);
+    publish_json(topic, payload);
 }
 
 static void publish_movement_state(bool state) {
-    StaticJsonDocument<64> doc;
-    doc["state"] = state ? "on" : "off";
+    String payload = JsonBuilder::movementState(state);
     char topic[128];
     snprintf(topic, sizeof(topic), "/%s/value", UUID_SENSOR_MOVIMIENTO);
-    publish_json(topic, doc);
+    publish_json(topic, payload);
 }
 
 static bool read_actuator_status(uint8_t& mask) {
@@ -185,11 +186,10 @@ static void publish_device_state(const BridgeDevice& device) {
                 return;
             }
             bool state = (mask >> device.bit) & 0x01;
-            StaticJsonDocument<64> doc;
-            doc["state"] = state ? "on" : "off";
+            String payload = JsonBuilder::doorState(state);
             char topic[128];
             snprintf(topic, sizeof(topic), "/%s/value", device.uuid);
-            publish_json(topic, doc);
+            publish_json(topic, payload);
             break;
         }
         case DeviceType::Thermostat: {
@@ -262,13 +262,13 @@ static bool send_thermostat_command(bool has_enable_auto, bool enable_auto, bool
 }
 
 static bool send_movement_command(bool turn_on) {
-    I2CPacket request{1, CMD_SET, turn_on ? 0x01 : 0x00, 0x00};
+    I2CPacket request{1, CMD_SET, static_cast<uint8_t>(turn_on ? 0x01 : 0x00), 0x00};
     request.checksum = pkt_checksum(request);
     return i2c_write_packet(0x08, request);
 }
 
 static void mqtt_message_callback(char* topic, byte* payload, unsigned int length) {
-    StaticJsonDocument<256> doc;
+    JsonDocument doc;
     DeserializationError error = deserializeJson(doc, payload, length);
     if (error) {
         Serial.printf("[MQTT] JSON inv�lido en %s: %s\n", topic, error.c_str());
