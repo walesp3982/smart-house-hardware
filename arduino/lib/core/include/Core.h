@@ -85,37 +85,4 @@ class Light: public IDevice {
         uint8_t pin;
 
 };
-// class SensorTemperature: public IDevice {
-//     public:
-//         SensorTemperature();
-//         void activate() override;
-//         void desactivate() override;
-//         Status get_status() override;
-// };
-
-// class Window: public Gate {
-//     public:
-//         Window(uint8_t _pin, int _rotation);
-// };
-
-// class Garage: public Gate {
-//     public:
-//         Garage(uint8_t _pin, int _rotation);
-// };
-
-// class Camara: public IDevice {
-//     public:
-//         Camara();
-//         void activate() override;
-//         void desactivate() override;
-//         Status get_status() override;
-// };
-
-// class Door: public IDevice {
-//     public:
-//         Door();
-//         void activate() override;
-//         void desactivate() override;
-//         Status get_status() override;
-// };
 
