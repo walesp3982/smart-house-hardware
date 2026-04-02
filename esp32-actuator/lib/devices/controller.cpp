@@ -43,12 +43,15 @@ std::vector<uint8_t> DevicesController::address_nodes() {
     return list_address;
 }
 
-std::vector<I2CPacket> DevicesController::send_i2c() {
-    std::vector<I2CPacket> list_updated_packed;
+std::vector<I2CBoxing> DevicesController::send_i2c() {
+    std::vector<I2CBoxing> list_updated_packed;
 
     for (int i = 0; i < size; i++) {
         ArduinoController* arduino = &arduino[i];
-        list_updated_packed.push_back(arduino->set_device_i2c());
+        I2CPacket pkt = arduino->set_device_i2c();
+        uint8_t address = arduino->get_address_i2c();
+        I2CBoxing boxing(pkt, address);
+        list_updated_packed.push_back(boxing);
     }
 
     return list_updated_packed;

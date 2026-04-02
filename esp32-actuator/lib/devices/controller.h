@@ -32,6 +32,13 @@ static bool is_topic_set_device(String topic, String uuid) {
 }
 
 
+struct I2CBoxing {
+    I2CPacket pkt;
+    uint8_t address;
+
+    I2CBoxing(I2CPacket _pkt, uint8_t _address) : pkt(_pkt), address(_address) {}
+};
+
 /**
  * Por el momento este es el máximo de devices en 
  * el dispositivo
@@ -48,6 +55,6 @@ public:
     void subscriber_action_mqtt(String topic, JsonDocument doc);
     std::vector<Publish> publish_action_mqtt();
     std::vector<uint8_t> address_nodes();
-    std::vector<I2CPacket> send_i2c();
+    std::vector<I2CBoxing> send_i2c();
     void received_i2c(std::vector<I2CPacket> &packets);
 };
