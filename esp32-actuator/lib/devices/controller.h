@@ -29,10 +29,7 @@ public:
     }
 };
 
-static bool is_topic_set_device(String topic, String uuid) {
-    return "/"+uuid == topic;
-}
-
+bool is_topic_set_device(String topic, String uuid);
 
 struct I2CBoxing {
     I2CPacket pkt;

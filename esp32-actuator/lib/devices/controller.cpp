@@ -1,5 +1,8 @@
 #include <controller.h>
 
+bool is_topic_set_device(String topic, String uuid) {
+    return "/"+uuid == topic;
+}
 
 DevicesController::DevicesController(): size(MAX_DEVICES) {
 }
