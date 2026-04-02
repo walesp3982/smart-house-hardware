@@ -33,13 +33,13 @@ constexpr uint8_t MAX_ACTUATORS = 8;
 class ActuatorsController : public ArduinoController
 {
 private:
-    Actuator actuators[MAX_ACTUATORS];
+    Actuator *actuators[MAX_ACTUATORS];
     uint8_t size;
     Actuator *get_actuator_by_uuid(String uuid);
 
 public:
     ActuatorsController(uint8_t _address, uint8_t node_id);
-    void add_actuators(Actuator actuator);
+    void add_actuators(Actuator *actuator);
     // Relacionado a MQTT
     void subscriber_mqtt(String topic, JsonDocument doc);
     std::vector<Publish> publish_mqtt();

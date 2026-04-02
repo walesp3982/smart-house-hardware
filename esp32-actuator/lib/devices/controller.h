@@ -1,7 +1,9 @@
+#pragma once
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <vector>
 #include <i2c_protocol.h>
+
 struct Publish {
     String topic;
     String payload;

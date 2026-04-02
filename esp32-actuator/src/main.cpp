@@ -11,13 +11,13 @@
 #include "movement.h"
 #include "thermostat.h"
 
-Actuator door_principal(UUID_PUERTA_PRINCIPAL, 0, TypeActuator::DOOR);
-Actuator door_garage(UUID_PUERTA_PRINCIPAL, 1, TypeActuator::DOOR);
-Actuator door_dormitorio(UUID_PUERTA_PRINCIPAL, 2, TypeActuator::DOOR);
-Actuator luz_garage(UUID_PUERTA_PRINCIPAL, 3, TypeActuator::DOOR);
-Actuator luz_dormitorio(UUID_PUERTA_PRINCIPAL, 4, TypeActuator::DOOR);
-Actuator luz_sala(UUID_PUERTA_PRINCIPAL, 5, TypeActuator::DOOR);
-Actuator luz_cocina(UUID_PUERTA_PRINCIPAL, 6, TypeActuator::DOOR);
+static Actuator door_principal(UUID_PUERTA_PRINCIPAL, 0, TypeActuator::DOOR);
+static Actuator door_garage(UUID_PUERTA_PRINCIPAL, 1, TypeActuator::DOOR);
+static Actuator door_dormitorio(UUID_PUERTA_PRINCIPAL, 2, TypeActuator::DOOR);
+static Actuator luz_garage(UUID_PUERTA_PRINCIPAL, 3, TypeActuator::DOOR);
+static Actuator luz_dormitorio(UUID_PUERTA_PRINCIPAL, 4, TypeActuator::DOOR);
+static Actuator luz_sala(UUID_PUERTA_PRINCIPAL, 5, TypeActuator::DOOR);
+static Actuator luz_cocina(UUID_PUERTA_PRINCIPAL, 6, TypeActuator::DOOR);
 
 constexpr uint8_t ADDR_ALARM = 0x08;
 constexpr uint8_t ADDR_ACTUATORS = 0x09;
@@ -26,17 +26,16 @@ constexpr uint8_t ADDR_TEMPERATURE = 0x0A;
 constexpr uint8_t NODE_ID_ALARM = 1;
 constexpr uint8_t NODE_ID_ACTUATORS = 2;
 constexpr uint8_t NODE_ID_TEMPERATURE = 3;
-ActuatorsController actuator_controller(ADDR_ACTUATORS, NODE_ID_ACTUATORS);
-TemperatureController temperature_controller(UUID_SENSOR_TEMPERATURE, ADDR_TEMPERATURE, NODE_ID_TEMPERATURE);
-MoveController move_controller(UUID_SENSOR_MOVIMIENTO, ADDR_ALARM, NODE_ID_ALARM);
-DevicesController devices_controller;
+static ActuatorsController actuator_controller(ADDR_ACTUATORS, NODE_ID_ACTUATORS);
+static TemperatureController temperature_controller(UUID_SENSOR_TEMPERATURE, ADDR_TEMPERATURE, NODE_ID_TEMPERATURE);
+static MoveController move_controller(UUID_SENSOR_MOVIMIENTO, ADDR_ALARM, NODE_ID_ALARM);
+static DevicesController devices_controller;
 
 
 static WiFiClient wifiClient;
 static PubSubClient mqtt(wifiClient);
 static char mqtt_client_id[32] = {0};
 static unsigned long last_status_poll = 0;
-static uint8_t actuator_cache_mask = 0;
 
 static void init_mqtt_client_id()
 {
@@ -164,13 +163,13 @@ void setup()
     /**
      * Agregamos los actuadores a actuatorscontroller
      */
-    actuator_controller.add_actuators(door_principal);
-    actuator_controller.add_actuators(door_garage);
-    actuator_controller.add_actuators(door_dormitorio);
-    actuator_controller.add_actuators(luz_garage);
-    actuator_controller.add_actuators(luz_dormitorio);
-    actuator_controller.add_actuators(luz_sala);
-    actuator_controller.add_actuators(luz_cocina);
+    actuator_controller.add_actuators(&door_principal);
+    actuator_controller.add_actuators(&door_garage);
+    actuator_controller.add_actuators(&door_dormitorio);
+    actuator_controller.add_actuators(&luz_garage);
+    actuator_controller.add_actuators(&luz_dormitorio);
+    actuator_controller.add_actuators(&luz_sala);
+    actuator_controller.add_actuators(&luz_cocina);
 
     /**
      * Agregamos los arduinos al controlador
