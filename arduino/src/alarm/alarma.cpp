@@ -9,7 +9,6 @@
 #endif
 
 static volatile bool alarm_active = false;
-static volatile uint8_t last_cmd = 0x00;
 
 static I2CPacket response;
 
@@ -35,8 +34,6 @@ void onReceived(int bytes) {
 
   if(!pkt_valid(pkt)) return;
   if(pkt.node_id != NODE_ID) return;
-
-  last_cmd = pkt.cmd;
 
   switch (pkt.cmd)
   {
