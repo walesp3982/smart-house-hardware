@@ -4,31 +4,39 @@
 #include "ArduinoJson.h"
 #include "controller.h"
 
-enum class TypeActuator: uint8_t {
+enum class TypeActuator : uint8_t
+{
     DOOR = 0,
-    LIGHT = 1 
+    LIGHT = 1
 };
 
-enum class StateActuator {
+enum class StateActuator
+{
     ON = 1,
     OFF = 0
 };
 
-class Actuator {
+class Actuator
+{
 public:
     String uuid;
     uint8_t bit_state;
     TypeActuator type;
     StateActuator state;
+
+    Actuator(String _uuid, uint8_t _bit_state, TypeActuator _type)
+        : uuid(_uuid), bit_state(_bit_state), type(_type), state(StateActuator::ON) {}
 };
 
 constexpr uint8_t MAX_ACTUATORS = 8;
 
-class ActuatorsController: public ArduinoController {
+class ActuatorsController : public ArduinoController
+{
 private:
     Actuator actuators[MAX_ACTUATORS];
     uint8_t size;
-    Actuator* get_actuator_by_uuid(String uuid);
+    Actuator *get_actuator_by_uuid(String uuid);
+
 public:
     ActuatorsController(uint8_t _address, uint8_t node_id);
     void add_actuators(Actuator actuator);
@@ -37,6 +45,5 @@ public:
     std::vector<Publish> publish_mqtt();
     // Relacionado a i2c
     void state_device_i2c(I2CPacket &ptk);
-    I2CPacket set_device_i2c(); 
+    I2CPacket set_device_i2c();
 };
-

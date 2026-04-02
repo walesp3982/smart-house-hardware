@@ -22,8 +22,32 @@ public:
     uint8_t get_address_i2c() {
         return address_i2c;
     }
+    uint8_t get_node_id() {
+        return node_id;
+    }
 };
 
 static bool is_topic_set_device(String topic, String uuid) {
     return "/"+uuid == topic;
 }
+
+
+/**
+ * Por el momento este es el máximo de devices en 
+ * el dispositivo
+ */
+constexpr uint8_t MAX_DEVICES = 3;
+
+class DevicesController {
+private:
+    ArduinoController* arduinos[MAX_DEVICES];
+    uint8_t size;
+public: 
+    DevicesController();
+    void add_arduino(ArduinoController &controller);
+    void subscriber_action_mqtt(String topic, JsonDocument doc);
+    std::vector<Publish> publish_action_mqtt();
+    std::vector<uint8_t> address_nodes();
+    std::vector<I2CPacket> send_i2c();
+    void received_i2c(std::vector<I2CPacket> &packets);
+};
