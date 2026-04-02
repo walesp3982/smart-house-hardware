@@ -76,6 +76,7 @@ static bool i2c_read_packet(uint8_t addr, I2CPacket& pkt) {
 }
 
 static bool request_node_status(uint8_t addr, uint8_t node_id, I2CPacket& response) {
+
     I2CPacket request{node_id, CMD_STATUS, 0x00, 0x00};
     request.checksum = pkt_checksum(request);
     if (!i2c_write_packet(addr, request)) {
@@ -161,6 +162,9 @@ static bool read_movement_status(bool& state) {
     return true;
 }
 
+/**
+ * Obtenemos el valores
+ */
 static void publish_all_states() {
     uint8_t actuator_mask;
     if (read_actuator_status(actuator_mask)) {
@@ -177,6 +181,9 @@ static void publish_all_states() {
     }
 }
 
+/**
+ * Obtenemos el estado actual del controller
+ */
 static void publish_device_state(const BridgeDevice& device) {
     switch (device.type) {
         case DeviceType::Light:
@@ -213,6 +220,9 @@ static void publish_device_state(const BridgeDevice& device) {
     }
 }
 
+/**
+ * Manda una secuencia de comando a los actuadores
+ */
 static bool send_actuator_command(int8_t bit, bool turn_on) {
     uint8_t mask;
     if (!read_actuator_status(mask)) {
@@ -233,6 +243,9 @@ static bool send_actuator_command(int8_t bit, bool turn_on) {
     return true;
 }
 
+/**
+ * Manda un comandos de configuration a termometro
+ */
 static bool send_thermostat_command(bool has_enable_auto, bool enable_auto, bool has_action, bool action_on, bool has_limit, uint8_t limit_temp) {
     ThermostatStatus current{false, true, 0};
     read_thermostat_status(current);
@@ -261,12 +274,19 @@ static bool send_thermostat_command(bool has_enable_auto, bool enable_auto, bool
     return i2c_write_packet(0x0A, request);
 }
 
+/**
+ * Manda un mensaje de ejecución al sensor de movimiento
+ */
 static bool send_movement_command(bool turn_on) {
     I2CPacket request{1, CMD_SET, static_cast<uint8_t>(turn_on ? 0x01 : 0x00), 0x00};
     request.checksum = pkt_checksum(request);
     return i2c_write_packet(0x08, request);
 }
 
+/** 
+ *Este es el callback que trabaja cuando recibimos mensaje en mqtt 
+ *Dependiendo del topic el programa configura el proyecto
+*/
 static void mqtt_message_callback(char* topic, byte* payload, unsigned int length) {
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, payload, length);
@@ -326,6 +346,13 @@ static void mqtt_message_callback(char* topic, byte* payload, unsigned int lengt
     }
 }
 
+/**
+ * Crea un conexión si el esp32 todavía no está conectado
+ * con el broker
+ * - Se subcribe a todos los topics
+ * - Publica el estado actual de todos los topics
+ * - Tiene un delay de 3 segundos
+ */
 static void mqtt_connect() {
     while (!mqtt.connected()) {
         if (mqtt.connect(mqtt_client_id, MQTT_USER, MQTT_PASSWORD)) {
