@@ -39,6 +39,12 @@ struct I2CBoxing {
     I2CBoxing(I2CPacket _pkt, uint8_t _address) : pkt(_pkt), address(_address) {}
 };
 
+struct I2CMetadata {
+    uint8_t address;
+    uint8_t node_id;
+
+    I2CMetadata(uint8_t _address, uint8_t _node_id): address(_address), node_id(_node_id) {}
+};
 /**
  * Por el momento este es el máximo de devices en 
  * el dispositivo
@@ -54,7 +60,7 @@ public:
     void add_arduino(ArduinoController &controller);
     void subscriber_action_mqtt(String topic, JsonDocument doc);
     std::vector<Publish> publish_action_mqtt();
-    std::vector<uint8_t> address_nodes();
+    std::vector<I2CMetadata> address_nodes();
     std::vector<I2CBoxing> send_i2c();
     void received_i2c(std::vector<I2CPacket> &packets);
 };

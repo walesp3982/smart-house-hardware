@@ -34,11 +34,15 @@ std::vector<Publish> DevicesController::publish_action_mqtt() {
     return all_publish;
 }
 
-std::vector<uint8_t> DevicesController::address_nodes() {
-    std::vector<uint8_t> list_address;
+/**
+ * Retorna un vector de direcciones i2c
+ */
+std::vector<I2CMetadata> DevicesController::address_nodes() {
+    std::vector<I2CMetadata> list_address;
     for(int i = 0; i < size; i++) {
         ArduinoController* arduino = arduinos[i];
-        list_address.push_back(arduino->get_address_i2c());
+        I2CMetadata metadata(arduino->get_address_i2c(), arduino->get_node_id());
+        list_address.push_back(metadata);
     }
     return list_address;
 }

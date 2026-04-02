@@ -90,12 +90,24 @@ static void publish_json(const char *topic, const String payload, bool retained 
 {
     mqtt.publish(topic, payload.c_str(), retained);
 }
+
 /**
- * Obtenemos el valores
+ * Lee todos los paquetes de los devices que están en I2C
  */
+static std::vector<I2CPacket> read_i2c_arduinos() {
+    std::vector<I2CPacket> read_packets;
+    for(I2CMetadata metadata: devices_controller.address_nodes()) {
+        I2CPacket response;
+        bool result = request_node_status(metadata.address, metadata.node_id, response);
+        if(result) {
+            read_packets.push_back(response);
+        }
+    }
+    return read_packets;
+}
 static void publish_all_states()
 {
-    std::vector<I2CPacket> packets;
+    std::vector<I2CPacket> packets = read_i2c_arduinos();
     devices_controller.received_i2c(packets);
     std::vector<Publish> states =  devices_controller.publish_action_mqtt();
 
