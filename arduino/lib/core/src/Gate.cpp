@@ -4,9 +4,10 @@
     Implementación de la clase Gate
 */
 
-Gate::Gate(uint8_t _pin, int _rotation, Data _data)
+Gate::Gate(uint8_t _pin, int _rotation, Data _data, uint8_t _i2c_command)
     :  motor(), pin(_pin), rotation(_rotation)
 {
+    bit_data_i2c = _i2c_command;
     status = Status::OFF;
     data = _data;
 }
