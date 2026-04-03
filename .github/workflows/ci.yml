@@ -41,15 +41,16 @@ jobs:
         run: pip install platformio
 
       - name: Create fake .env
-        working-directory: ${{ matrix.project }}
-        run: cp .env.example .env || cat > .env << 'EOF'
-          WIFI_SSID=ci_fake_ssid
-          WIFI_PASSWORD=ci_fake_password
-          MQTT_HOST=localhost
-          MQTT_PORT=1883
-          MQTT_USER=ci_user
-          MQTT_PASSWORD=ci_password
-          EOF
+        env:
+          FAKE_ENV: |
+            WIFI_SSID=ci_fake_ssid
+            WIFI_PASSWORD=ci_fake_password
+            MQTT_HOST=localhost
+            MQTT_PORT=1883
+            MQTT_USER=ci_user
+            MQTT_PASSWORD=ci_password
+        run: |
+          [ -f .env] || echo "$FAKE_ENV" > .env
 
       - name: Build ${{ matrix.project }} [${{ matrix.environment }}]
         working-directory: ${{ matrix.project }}
