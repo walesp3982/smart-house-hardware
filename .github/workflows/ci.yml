@@ -5,32 +5,52 @@ on:
   pull_request:
 
 jobs:
-  build-arduino:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-      - name: Install PlatformIO
-        run: pip install platformio
-      - name: Build Arduino Firmware
-        working-directory: arduino
-        run: platformio run
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Arduino: tres entornos, un .env compartido
+          - project: arduino
+            environment: alarm
+          - project: arduino
+            environment: actuator
+          - project: arduino
+            environment: temperature
 
-  build-esp32:
-    runs-on: ubuntu-latest
+          # ESP32 projects: un solo entorno por proyecto
+          - project: master_esp32
+            environment: esp32cam
+          - project: esp32-actuator
+            environment: esp32dev
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Install Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Install PlatformIO
         run: pip install platformio
-      - name: Build ESP32 Firmware
-        working-directory: master_esp32
-        run: platformio run
+
+      - name: Create fake .env
+        working-directory: ${{ matrix.project }}
+        run: cp .env.example .env || cat > .env << 'EOF'
+          WIFI_SSID=ci_fake_ssid
+          WIFI_PASSWORD=ci_fake_password
+          MQTT_HOST=localhost
+          MQTT_PORT=1883
+          MQTT_USER=ci_user
+          MQTT_PASSWORD=ci_password
+          EOF
+
+      - name: Build ${{ matrix.project }} [${{ matrix.environment }}]
+        working-directory: ${{ matrix.project }}
+        run: platformio run --environment ${{ matrix.environment }}
