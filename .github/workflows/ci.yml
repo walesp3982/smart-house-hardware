@@ -7,10 +7,23 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     strategy:
+      fail-fast: false
       matrix:
-        env: [esp32_master, uno]
+        include:
+          # Arduino: tres entornos, un .env compartido
+          - project: arduino
+            environment: alarm
+          - project: arduino
+            environment: actuator
+          - project: arduino
+            environment: temperature
+
+          # ESP32 projects: un solo entorno por proyecto
+          - project: master_esp32
+            environment: esp32cam
+          - project: esp32-actuator
+            environment: esp32dev
 
     steps:
       - name: Checkout
@@ -21,8 +34,24 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Install PlatformIO
         run: pip install platformio
 
-      - name: Build Firmware
-        run: pio run -e ${{ matrix.env }}
+      - name: Create fake .env
+        env:
+          FAKE_ENV: |
+            WIFI_SSID=ci_fake_ssid
+            WIFI_PASSWORD=ci_fake_password
+            MQTT_HOST=localhost
+            MQTT_PORT=1883
+            MQTT_USER=ci_user
+            MQTT_PASSWORD=ci_password
+        run: |
+          [ -f .env] || echo "$FAKE_ENV" > .env
+
+      - name: Build ${{ matrix.project }} [${{ matrix.environment }}]
+        working-directory: ${{ matrix.project }}
+        run: platformio run --environment ${{ matrix.environment }}

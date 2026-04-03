@@ -1,0 +1,31 @@
+{
+    "folders": [
+        {
+            "name": "arduino",
+            "path": "./arduino"
+        },
+        {
+            "name": "master_esp32",
+            "path": "./master_esp32"
+        },
+        {
+            "name": "esp32-actuator",
+            "path": "./esp32-actuator"
+        },
+        {
+            "name": "scripts",
+            "path": "./scripts"
+        },
+                {
+            "name": "root",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "platformio-ide.activateProjectOnTextEditorChange": true,
+        "python.defaultInterpreterPath": "${workspaceFolder:root}/.venv/Scripts/python.exe",
+        "python.terminal.activateEnvironment": true,
+        "python.terminal.activateEnvInCurrentTerminal": true,
+        "terminal.integrated.defaultProfile.windows": "PowerShell"
+    }  
+}

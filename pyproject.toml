@@ -1,0 +1,12 @@
+[project]
+name = "smart-house-hardware-root"
+version = "0.1.0"
+description = "Root configuration and build loader for smart house projects."
+requires-python = ">=3.11"
+dependencies = [
+    "httpx[cli]>=0.28.1",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.13.1",
+    "pyright>=1.1.408",
+    "ruff>=0.15.8",
+]
