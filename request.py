@@ -23,17 +23,17 @@ class DeviceRequest(BaseModel):
 class DeviceCreatedResponse(BaseModel):
     message: str
 
-def building_url():
+def building_base_url():
     """
     Creamos la url donde vamos a guardar la url
     """
     app_setting = AppSettings() # pyright: ignore[reportCallIssue]
-    host: str = app_setting.host.encoded_string()
+    host: str = app_setting.host
     return urlunparse(
         ParseResult(
             scheme="http",
             netloc=host,
-            path="devices",
+            path="",
             params="",
             query="",
             fragment=""
@@ -44,9 +44,9 @@ class DeviceCannotCreatedException(Exception):
     def __init__(self, status_code: int, uuid: str):
         super().__init__(f"El dispositivo no pudo ser creado uuid:{uuid}, status_code:{status_code}")
 
-def post_device_api(device: DeviceRequest, url: str) -> DeviceCreatedResponse:
-    response = httpx.post(
-        url=url,
+def post_device_api(device: DeviceRequest, url: str, client: httpx.Client) -> DeviceCreatedResponse:
+    response = client.post(
+        url="/devices",
         json=device.model_dump()
     )
 
@@ -59,18 +59,19 @@ def post_device_api(device: DeviceRequest, url: str) -> DeviceCreatedResponse:
 def main():
     list_devices: ListDevices = get_list_device_by_file(DEVICE_JSON_PATH)
     devices_request: list[DeviceRequest] = [DeviceRequest.from_entity(device) for device in list_devices.devices]
-    url = building_url()
+    url = building_base_url()
     print(f"Creando dispositivos a api: {url}")
     print("*"*30)
 
-    for device in devices_request:
-        try:
-            response = post_device_api(device, url)
-            print(f"Ok: {response.message}")
-        except DeviceCannotCreatedException as err:
-            print("Error: ", err)
-        except Exception as err:
-            print("Error desconocido", err.__str__())
+    with httpx.Client(base_url=building_base_url()) as client:
+        for device in devices_request:
+            try:
+                response = post_device_api(device, url, client)
+                print(f"Ok: {response.message}")
+            except DeviceCannotCreatedException as err:
+                print("Error: ", err)
+            except Exception as err:
+                print("Error desconocido", err.__str__())
     print("*"*30)
         
     
