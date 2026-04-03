@@ -2,12 +2,24 @@ from typing import Any
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
+from pydantic import AnyUrl
 
 # El .env tiene que estar localizado en ../
 ROOT = Path(__file__).resolve().parent.parent 
 
 ENV_FILE = ROOT / ".env"
 DEVICE_FILE = ROOT / "devices.json"
+
+
+class AppSettings(BaseSettings):
+    name:str
+    host:AnyUrl
+
+    model_config = SettingsConfigDict(
+        env_file=ENV_FILE,
+        extra="ignore",
+        env_prefix="APP_"
+    )
 
 class WifiSettings(BaseSettings):
     SSID: str

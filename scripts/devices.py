@@ -9,11 +9,11 @@ class DeviceValue(BaseModel):
     web_value: str
 
 class TypeDevice(Enum):
-    light = DeviceValue(cpp_value=0, web_value="light")
-    camera = DeviceValue(cpp_value=1, web_value="camera")
-    door = DeviceValue(cpp_value=2, web_value="door")
-    thermostat = DeviceValue(cpp_value=4, web_value="thermostat")
-    movement = DeviceValue(cpp_value=5, web_value="movement")
+    light = "light"
+    camera = "camera"
+    door = "door"
+    thermostat = "thermostat"
+    movement = "movement"
 
 
 VALID_TARGETS = ("esp32cam", "esp32")
@@ -23,7 +23,7 @@ class Device(BaseModel):
     uuid: str
     type: TypeDevice
     target: list[TargetsOptions]
-
+    verification_code: str
 
 class ListDevices(BaseModel):
     devices: list[Device]
