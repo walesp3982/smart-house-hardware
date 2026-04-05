@@ -97,7 +97,7 @@ std::vector<String> ActuatorsController::get_subscribe_topics() {
     for (int i = 0; i < size; i++) {
         Actuator *actuator = actuators[i];
         if(!actuator) {
-            return;
+            continue;
         }
         topics.push_back(generate_set_topic(actuator->uuid));
 
