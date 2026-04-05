@@ -150,7 +150,14 @@ static void mqtt_connect()
     {
         if (mqtt.connect(mqtt_client_id, MQTT_USER, MQTT_PASSWORD))
         {
-            // Crear subscribe topic
+            // Suscribirse a todos los topics de los devices
+            std::vector<String> topics = devices_controller.get_topics_devices();
+            for (const String &topic : topics) {
+                mqtt.subscribe(topic.c_str());
+                Serial.printf("[MQTT] Suscrito a: %s\n", topic.c_str());
+            }
+            
+            // Publicar estado actual
             publish_all_states();
             return;
         }

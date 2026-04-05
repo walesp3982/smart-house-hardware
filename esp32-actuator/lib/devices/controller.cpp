@@ -77,3 +77,18 @@ void DevicesController::received_i2c(std::vector<I2CPacket> &packets) {
         }
     }
 }
+
+std::vector<String> DevicesController::get_topics_devices() {
+    std::vector<String> topics;
+    for (int i = 0; i < size; i++) {
+        ArduinoController* arduino = &arduino[i];
+        if (!arduino) {
+            continue;
+        }
+        std::vector<String> topic_device = arduino->get_subscribe_topics() ;
+
+        topics.insert(topics.end(), topic_device.begin(), topic_device.end());
+    }
+
+    return topics;
+}

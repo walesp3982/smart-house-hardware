@@ -63,5 +63,6 @@ public:
     std::vector<Publish> publish_action_mqtt();
     std::vector<I2CMetadata> address_nodes();
     std::vector<I2CBoxing> send_i2c();
+    std::vector<String> get_topics_devices();
     void received_i2c(std::vector<I2CPacket> &packets);
 };
