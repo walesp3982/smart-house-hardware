@@ -8,7 +8,7 @@ ActuatorsController::ActuatorsController(uint8_t _address, uint8_t _node_id)
     node_id = _node_id;
 }
 
-void ActuatorsController::add_actuators(Actuator* actuator)
+void ActuatorsController::add_actuators(Actuator *actuator)
 {
     if (size >= MAX_ACTUATORS)
     {
@@ -47,8 +47,14 @@ void ActuatorsController::subscriber_mqtt(String topic, JsonDocument doc)
             {
                 return;
             }
-            bool turn_on = strcmp(action, "on") == 0;
-            actuator->state = turn_on ? StateActuator::ON : StateActuator::OFF;
+            if (strcmp(action, "on") == 0)
+            {
+                actuator->state = StateActuator::ON;
+            }
+            else if (strcmp(action, "off") == 0)
+            {
+                actuator->state = StateActuator::OFF;
+            }
         }
     }
 }
