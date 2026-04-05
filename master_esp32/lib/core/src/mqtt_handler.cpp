@@ -19,7 +19,7 @@ static PubSubClient mqtt(wifiClient);
 // ── Publicar estado actual ──────────────────────────────────────────────────
 void mqtt_publish_state(bool camera_active, const char* stream_url) {
     StaticJsonDocument<200> doc;
-    doc["active"]     = camera_active;
+    doc["state"]      = camera_active ? "on" : "off";
     doc["stream_url"] = camera_active ? stream_url : "";
     doc["ip"]         = WiFi.localIP().toString();
 
@@ -44,44 +44,15 @@ static void on_message(char* topic, byte* payload, unsigned int len) {
     Serial.printf("[MQTT] Acción recibida: %s\n", action);
 
     // ── Prender cámara ──────────────────────────────────────────────────────
-    if (strcmp(action, "camera_on") == 0) {
+    if (strcmp(action, "on") == 0) {
         camera_set_active(true);
         mqtt_publish_state(true, _stream_url.c_str());
     }
 
     // ── Apagar cámara ───────────────────────────────────────────────────────
-    else if (strcmp(action, "camera_off") == 0) {
+    else if (strcmp(action, "off") == 0) {
         camera_set_active(false);
         mqtt_publish_state(false, "");
-    }
-
-    // ── Toggle ──────────────────────────────────────────────────────────────
-    else if (strcmp(action, "camera_toggle") == 0) {
-        bool now = !camera_is_active();
-        camera_set_active(now);
-        mqtt_publish_state(now, _stream_url.c_str());
-    }
-
-    // ── Solicitar captura ───────────────────────────────────────────────────
-    // La cámara no envía la foto por MQTT (demasiado grande).
-    // Publica la URL del endpoint de captura para que el backend la descargue.
-    else if (strcmp(action, "snapshot") == 0) {
-        if (!camera_is_active()) {
-            Serial.println("[MQTT] Snapshot ignorado — cámara apagada");
-            return;
-        }
-        char snapshot_url[100];
-        snprintf(snapshot_url, sizeof(snapshot_url),
-                 "http://%s/snapshot", WiFi.localIP().toString().c_str());
-
-        StaticJsonDocument<200> resp;
-        resp["snapshot_url"] = snapshot_url;
-        char buf[200];
-        serializeJson(resp, buf);
-
-        // Publica la URL en state para que el backend la descargue via HTTP
-        mqtt.publish(_topic_state, buf, false);
-        Serial.printf("[MQTT] Snapshot disponible en %s\n", snapshot_url);
     }
 }
 
