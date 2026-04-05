@@ -48,6 +48,12 @@ std::vector<Publish> TemperatureController::publish_mqtt()
     return publish;
 }
 
+std::vector<String> TemperatureController::get_subscribe_topics() {
+    std::vector<String> topics;
+
+    topics.push_back(generate_set_topic(uuid));
+    return topics;
+}
 I2CPacket TemperatureController::set_device_i2c()
 {
     I2CPacket pkt;

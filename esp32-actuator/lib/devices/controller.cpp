@@ -1,9 +1,12 @@
 #include <controller.h>
 
 bool is_topic_set_device(String topic, String uuid) {
-    return "/"+uuid == topic;
+    return "/"+uuid+"/set" == topic;
 }
 
+String generate_set_topic(String uuid) {
+    return String("/") + uuid + "/set"; 
+}
 DevicesController::DevicesController(): size(MAX_DEVICES) {
 }
 

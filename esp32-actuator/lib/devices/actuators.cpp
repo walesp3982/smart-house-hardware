@@ -92,6 +92,19 @@ std::vector<Publish> ActuatorsController::publish_mqtt()
     return publish;
 }
 
+std::vector<String> ActuatorsController::get_subscribe_topics() {
+    std::vector<String> topics;
+    for (int i = 0; i < size; i++) {
+        Actuator *actuator = actuators[i];
+        if(!actuator) {
+            return;
+        }
+        topics.push_back(generate_set_topic(actuator->uuid));
+
+    }
+    return topics;
+}
+
 void ActuatorsController::state_device_i2c(I2CPacket &ptk)
 {
     for (int i = 0; i < size; i++)

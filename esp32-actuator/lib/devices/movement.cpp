@@ -38,6 +38,12 @@ std::vector<Publish> MoveController::publish_mqtt() {
     return publish;
 }
 
+std::vector<String> MoveController::get_subscribe_topics() {
+    std::vector<String> topics;
+
+    topics.push_back(generate_set_topic(uuid));
+    return topics;
+}
 I2CPacket MoveController::set_device_i2c() {
     I2CPacket pkt;
 

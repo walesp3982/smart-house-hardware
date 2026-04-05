@@ -43,6 +43,7 @@ public:
     // Relacionado a MQTT
     void subscriber_mqtt(String topic, JsonDocument doc);
     std::vector<Publish> publish_mqtt();
+    std::vector<String> get_subscribe_topics();
     // Relacionado a i2c
     void state_device_i2c(I2CPacket &ptk);
     I2CPacket set_device_i2c();
