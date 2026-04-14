@@ -229,7 +229,7 @@ void loop()
     mqtt.loop();
 
     unsigned long now = millis();
-    if (now - last_status_poll > 30000)
+    if (now - last_status_poll > 2000)
     {
         std::vector<I2CPacket> packets = read_i2c_arduinos();
         devices_controller.received_i2c(packets);
