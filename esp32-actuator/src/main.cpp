@@ -31,7 +31,6 @@ static TemperatureController temperature_controller(UUID_SENSOR_TEMPERATURE, ADD
 static MoveController move_controller(UUID_SENSOR_MOVIMIENTO, ADDR_ALARM, NODE_ID_ALARM);
 static DevicesController devices_controller;
 
-
 static WiFiClient wifiClient;
 static PubSubClient mqtt(wifiClient);
 static char mqtt_client_id[32] = {0};
@@ -93,12 +92,15 @@ static void publish_json(const char *topic, const String payload, bool retained 
 /**
  * Lee todos los paquetes de los devices que están en I2C
  */
-static std::vector<I2CPacket> read_i2c_arduinos() {
+static std::vector<I2CPacket> read_i2c_arduinos()
+{
     std::vector<I2CPacket> read_packets;
-    for(I2CMetadata metadata: devices_controller.address_nodes()) {
+    for (I2CMetadata metadata : devices_controller.address_nodes())
+    {
         I2CPacket response;
         bool result = request_node_status(metadata.address, metadata.node_id, response);
-        if(result) {
+        if (result)
+        {
             read_packets.push_back(response);
         }
     }
@@ -108,9 +110,10 @@ static void publish_all_states()
 {
     std::vector<I2CPacket> packets = read_i2c_arduinos();
     devices_controller.received_i2c(packets);
-    std::vector<Publish> states =  devices_controller.publish_action_mqtt();
+    std::vector<Publish> states = devices_controller.publish_action_mqtt();
 
-    for(const Publish state: states) {
+    for (const Publish state : states)
+    {
         Serial.print("Publicando \"");
         Serial.print(state.topic);
         Serial.print("\" con topic");
@@ -136,7 +139,8 @@ static void mqtt_message_callback(char *topic, byte *payload, unsigned int lengt
     devices_controller.subscriber_action_mqtt(String(topic), doc);
     std::vector<I2CBoxing> packet_updated = devices_controller.send_i2c();
 
-    for(const I2CBoxing packet: packet_updated) {
+    for (const I2CBoxing packet : packet_updated)
+    {
         i2c_write_packet(packet.address, packet.pkt);
     }
 }
@@ -150,25 +154,32 @@ static void mqtt_message_callback(char *topic, byte *payload, unsigned int lengt
  */
 static void mqtt_connect()
 {
-    while (!mqtt.connected())
+    if (mqtt.connected())
+        return;
+
+    static unsigned long last_attempt = 0;
+    unsigned long now = millis();
+
+    if (now - last_attempt < 500)
+        return;
+    last_attempt = now;
+
+    if (mqtt.connect(mqtt_client_id, MQTT_USER, MQTT_PASSWORD))
     {
-        if (mqtt.connect(mqtt_client_id, MQTT_USER, MQTT_PASSWORD))
+        // Suscribirse a todos los topics de los devices
+        for (const String &topic : devices_controller.get_topics_devices())
         {
-            // Suscribirse a todos los topics de los devices
-            std::vector<String> topics = devices_controller.get_topics_devices();
-            for (const String &topic : topics) {
-                mqtt.subscribe(topic.c_str());
-                Serial.print("Suscribiendose a: ");
-                Serial.println(topic);
-                Serial.printf("[MQTT] Suscrito a: %s\n", topic.c_str());
-            }
-            
-            // Publicar estado actual
-            publish_all_states();
-            return;
+            mqtt.subscribe(topic.c_str());
+            Serial.print("Suscribiendose a: ");
+            Serial.println(topic);
+            Serial.printf("[MQTT] Suscrito a: %s\n", topic.c_str());
         }
-        delay(500);
+
+        // Publicar estado actual
+        publish_all_states();
+        return;
     }
+    delay(500);
 }
 
 void setup()
@@ -206,6 +217,9 @@ void setup()
     mqtt_connect();
 }
 
+static unsigned long last_i2c_read = 0;
+static unsigned long last_mqtt_publish = 0;
+
 void loop()
 {
     if (!mqtt.connected())
@@ -213,9 +227,25 @@ void loop()
         mqtt_connect();
     }
     mqtt.loop();
-    if (millis() - last_status_poll > 30000)
+
+    unsigned long now = millis();
+    if (now - last_status_poll > 30000)
     {
-        publish_all_states();
+        std::vector<I2CPacket> packets = read_i2c_arduinos();
+        devices_controller.received_i2c(packets);
+        last_i2c_read = now;
+    }
+    /**
+     *         publish_all_states();
         last_status_poll = millis();
+     */
+    if (now - last_mqtt_publish > 30000)
+    {
+        std::vector<Publish> states = devices_controller.publish_action_mqtt();
+        for (const Publish &state : states)
+        {
+            publish_json(state.topic.c_str(), state.payload);
+        }
+        last_mqtt_publish = now;
     }
 }
