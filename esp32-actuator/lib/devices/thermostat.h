@@ -2,7 +2,7 @@
 
 class TemperatureController : public ArduinoController {
 private:
-    int8_t temp_limit = 0;
+    int8_t temp_limit = 50;
     bool state;
     bool enable_auto;
     String uuid;

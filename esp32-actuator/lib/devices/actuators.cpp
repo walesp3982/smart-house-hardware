@@ -115,7 +115,7 @@ void ActuatorsController::state_device_i2c(I2CPacket &ptk)
             continue;
         }
 
-        bool turn_on = (1 >> actuator->bit_state) == 0x01 ? true : false;
+        bool turn_on = (ptk.data & (1 << actuator->bit_state) ) != 0;
         actuator->state = turn_on ? StateActuator::ON : StateActuator::OFF;
     }
 }

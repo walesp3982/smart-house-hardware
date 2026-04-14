@@ -30,7 +30,7 @@ std::vector<Publish> MoveController::publish_mqtt() {
 
     String data = JsonBuilder::movementState(state);
 
-    String topic = "/" + uuid;
+    String topic = "/" + uuid + "/value";
 
     Publish p{topic, data};
 

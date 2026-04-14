@@ -12,12 +12,12 @@
 #include "thermostat.h"
 
 static Actuator door_principal(UUID_PUERTA_PRINCIPAL, 0, TypeActuator::DOOR);
-static Actuator door_garage(UUID_PUERTA_PRINCIPAL, 1, TypeActuator::DOOR);
-static Actuator door_dormitorio(UUID_PUERTA_PRINCIPAL, 2, TypeActuator::DOOR);
-static Actuator luz_garage(UUID_PUERTA_PRINCIPAL, 3, TypeActuator::DOOR);
-static Actuator luz_dormitorio(UUID_PUERTA_PRINCIPAL, 4, TypeActuator::DOOR);
-static Actuator luz_sala(UUID_PUERTA_PRINCIPAL, 5, TypeActuator::DOOR);
-static Actuator luz_cocina(UUID_PUERTA_PRINCIPAL, 6, TypeActuator::DOOR);
+static Actuator door_garage(UUID_PUERTA_GARAGE, 1, TypeActuator::DOOR);
+static Actuator door_dormitorio(UUID_PUERTA_DORMITORIO, 2, TypeActuator::DOOR);
+static Actuator luz_garage(UUID_LUZ_GARAGE, 3, TypeActuator::DOOR);
+static Actuator luz_dormitorio(UUID_LUZ_DORMITORIO, 4, TypeActuator::DOOR);
+static Actuator luz_sala(UUID_LUZ_SALA, 5, TypeActuator::DOOR);
+static Actuator luz_cocina(UUID_LUZ_COCINA, 6, TypeActuator::DOOR);
 
 constexpr uint8_t ADDR_ALARM = 0x08;
 constexpr uint8_t ADDR_ACTUATORS = 0x09;
@@ -77,7 +77,7 @@ static bool request_node_status(uint8_t addr, uint8_t node_id, I2CPacket &respon
     {
         return false;
     }
-    delay(10);
+    delay(2);
     if (!i2c_read_packet(addr, response))
     {
         return false;
@@ -111,6 +111,10 @@ static void publish_all_states()
     std::vector<Publish> states =  devices_controller.publish_action_mqtt();
 
     for(const Publish state: states) {
+        Serial.print("Publicando \"");
+        Serial.print(state.topic);
+        Serial.print("\" con topic");
+        Serial.println(state.payload);
         publish_json(state.topic.c_str(), state.payload);
     }
 }
@@ -154,6 +158,8 @@ static void mqtt_connect()
             std::vector<String> topics = devices_controller.get_topics_devices();
             for (const String &topic : topics) {
                 mqtt.subscribe(topic.c_str());
+                Serial.print("Suscribiendose a: ");
+                Serial.println(topic);
                 Serial.printf("[MQTT] Suscrito a: %s\n", topic.c_str());
             }
             
@@ -161,7 +167,7 @@ static void mqtt_connect()
             publish_all_states();
             return;
         }
-        delay(3000);
+        delay(500);
     }
 }
 
