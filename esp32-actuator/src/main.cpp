@@ -239,7 +239,7 @@ void loop()
      *         publish_all_states();
         last_status_poll = millis();
      */
-    if (now - last_mqtt_publish > 30000)
+    if (now - last_mqtt_publish > 1000)
     {
         std::vector<Publish> states = devices_controller.publish_action_mqtt();
         for (const Publish &state : states)
