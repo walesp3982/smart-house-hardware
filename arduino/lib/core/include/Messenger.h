@@ -67,7 +67,7 @@ public:
   }
 
   void send(const Message& msg) {
-    char out[100];
+    static char out[100];  // Buffer static para evitar stack overflow
     MessageBuilder::getInstance().build(out, sizeof(out), msg);
     Serial.print(out);
   }

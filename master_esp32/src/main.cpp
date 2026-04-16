@@ -3,6 +3,7 @@
 #include "esp_http_server.h"
 #include "camera.h"
 #include "mqtt_handler.h"
+#include "generated_devices.h"
 
 // Provistos por build_flags en platformio.ini
 #ifndef MQTT_USER
@@ -12,8 +13,8 @@
   #define MQTT_PASSWORD
  ""
 #endif
-#ifndef CAMERA_UUID
-  #define CAMERA_UUID "00000000-0000-0000-0000-000000000000"
+#ifndef UUID_CAMERA
+  #define UUID_CAMERA "00000000-0000-0000-0000-000000000000"
 #endif
 
 
@@ -123,7 +124,7 @@ void setup() {
     start_http_server();
 
     // MQTT
-    mqtt_setup(CAMERA_UUID, MQTT_USER, MQTT_PASSWORD
+    mqtt_setup(UUID_CAMERA, MQTT_USER, MQTT_PASSWORD
   );
 }
 

@@ -25,7 +25,7 @@ public:
     StateActuator state;
 
     Actuator(String _uuid, uint8_t _bit_state, TypeActuator _type)
-        : uuid(_uuid), bit_state(_bit_state), type(_type), state(StateActuator::ON) {}
+        : uuid(_uuid), bit_state(_bit_state), type(_type), state(StateActuator::OFF) {}
 };
 
 constexpr uint8_t MAX_ACTUATORS = 8;
@@ -43,6 +43,7 @@ public:
     // Relacionado a MQTT
     void subscriber_mqtt(String topic, JsonDocument doc);
     std::vector<Publish> publish_mqtt();
+    std::vector<String> get_subscribe_topics();
     // Relacionado a i2c
     void state_device_i2c(I2CPacket &ptk);
     I2CPacket set_device_i2c();
