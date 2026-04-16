@@ -4,7 +4,7 @@
 #include "Messenger.h"
 #include "Wire.h"
 
-const int BUFFER_SIZE = 50;
+const int BUFFER_SIZE = 32;  // Reducido de 50 para ahorrar RAM
 char inputBuffer[BUFFER_SIZE];
 uint8_t bufferIndex = 0;
 
@@ -33,6 +33,8 @@ Light luz_cocina(11, Data{"Luz cocina", "L3"}, BIT_LUZ_COCINA);
 #if MODE == 1
   static I2CPacket response;
   void onReceived(int bytes) {
+    Serial.println("PKT");
+    
     if(bytes != PKT_SIZE) {
       while(Wire.available()) Wire.read();
       return;
@@ -70,6 +72,7 @@ Light luz_cocina(11, Data{"Luz cocina", "L3"}, BIT_LUZ_COCINA);
     Wire.write(buf, PKT_SIZE);
   }
 #endif
+
 void setup() {
   // Setting Serialización
   MessageBuilder::getInstance().setDevice(NAMING);
@@ -94,6 +97,8 @@ void setup() {
     Wire.onReceive(onReceived);
     Wire.onRequest(onRequest);
     digitalWrite(LED_BUILTIN, HIGH);
+    Serial.print("SIZE:");
+    Serial.println(controller.get_size());
   #endif 
 }
 

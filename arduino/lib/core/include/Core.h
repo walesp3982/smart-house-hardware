@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <Servo.h>
 #include <I2C_protocol.h>
-const int MAX_DEVICES = 10;
+const int MAX_DEVICES = 7;  // Exactamente 7 dispositivos
 
 enum class Status: uint8_t {
     OFF=0,
@@ -47,6 +47,7 @@ class DevicesController {
         IDevice* get_device(int pos);
         void execute_i2c(I2CPacket packet);
         uint8_t get_status_devices_i2c();
+        uint8_t get_size() const { return _size; }
     private:
         IDevice* _devices[MAX_DEVICES];
         uint8_t _size;
