@@ -38,23 +38,27 @@ void ActuatorsController::subscriber_mqtt(String topic, JsonDocument doc)
         Actuator *actuator = actuators[i];
         if (!actuator)
         {
-            break;
+            continue;  // Skip null actuators and continue checking others
         }
         if (is_topic_set_device(topic, actuator->uuid))
         {
             const char *action = doc["action"];
             if (!action)
             {
-                return;
+                Serial.printf("[MQTT] Campo 'action' faltante en topic %s\n", topic.c_str());
+                return;  // Return only after finding matching actuator
             }
             if (strcmp(action, "on") == 0)
             {
                 actuator->state = StateActuator::ON;
+                Serial.printf("[MQTT] Actuador %s -> ON\n", actuator->uuid.c_str());
             }
             else if (strcmp(action, "off") == 0)
             {
                 actuator->state = StateActuator::OFF;
+                Serial.printf("[MQTT] Actuador %s -> OFF\n", actuator->uuid.c_str());
             }
+            return;  // Only one actuator per topic, exit after processing
         }
     }
 }
