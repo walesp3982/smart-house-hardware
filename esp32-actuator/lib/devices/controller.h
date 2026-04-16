@@ -58,7 +58,7 @@ private:
     uint8_t size;
 public: 
     DevicesController();
-    void add_arduino(ArduinoController &controller);
+    void add_arduino(ArduinoController *controller);
     void subscriber_action_mqtt(String topic, JsonDocument doc);
     std::vector<Publish> publish_action_mqtt();
     std::vector<I2CMetadata> address_nodes();
