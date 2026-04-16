@@ -14,10 +14,10 @@
 static Actuator door_principal(UUID_PUERTA_PRINCIPAL, 0, TypeActuator::DOOR);
 static Actuator door_garage(UUID_PUERTA_GARAGE, 1, TypeActuator::DOOR);
 static Actuator door_dormitorio(UUID_PUERTA_DORMITORIO, 2, TypeActuator::DOOR);
-static Actuator luz_garage(UUID_LUZ_GARAGE, 3, TypeActuator::DOOR);
-static Actuator luz_dormitorio(UUID_LUZ_DORMITORIO, 4, TypeActuator::DOOR);
-static Actuator luz_sala(UUID_LUZ_SALA, 5, TypeActuator::DOOR);
-static Actuator luz_cocina(UUID_LUZ_COCINA, 6, TypeActuator::DOOR);
+static Actuator luz_garage(UUID_LUZ_GARAGE, 3, TypeActuator::LIGHT);
+static Actuator luz_dormitorio(UUID_LUZ_DORMITORIO, 4, TypeActuator::LIGHT);
+static Actuator luz_sala(UUID_LUZ_SALA, 5, TypeActuator::LIGHT);
+static Actuator luz_cocina(UUID_LUZ_COCINA, 6, TypeActuator::LIGHT);
 
 constexpr uint8_t ADDR_ALARM = 0x08;
 constexpr uint8_t ADDR_ACTUATORS = 0x09;
@@ -184,6 +184,8 @@ static void mqtt_connect()
 
 void setup()
 {
+    Serial.begin(115200);
+
     /**
      * Agregamos los actuadores a actuatorscontroller
      */
@@ -202,7 +204,6 @@ void setup()
     devices_controller.add_arduino(temperature_controller);
     devices_controller.add_arduino(move_controller);
 
-    Serial.begin(115200);
     Wire.begin();
 
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -217,7 +218,6 @@ void setup()
     mqtt_connect();
 }
 
-static unsigned long last_i2c_read = 0;
 static unsigned long last_mqtt_publish = 0;
 
 void loop()
@@ -233,7 +233,7 @@ void loop()
     {
         std::vector<I2CPacket> packets = read_i2c_arduinos();
         devices_controller.received_i2c(packets);
-        last_i2c_read = now;
+        last_status_poll = now;
     }
     /**
      *         publish_all_states();
