@@ -14,8 +14,7 @@ void ActuatorsController::add_actuators(Actuator *actuator)
     {
         return;
     }
-    actuators[size] = actuator;
-    size++;
+    actuators[size++] = actuator;
 }
 
 Actuator *ActuatorsController::get_actuator_by_uuid(String uuid)

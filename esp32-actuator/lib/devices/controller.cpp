@@ -10,12 +10,12 @@ String generate_set_topic(String uuid) {
 DevicesController::DevicesController(): size(0) {
 }
 
-void DevicesController::add_arduino(ArduinoController &controller) {
+void DevicesController::add_arduino(ArduinoController *controller) {
     if(size >= MAX_DEVICES) {
         return;
     }
 
-    arduinos[size++] = &controller;
+    arduinos[size++] = controller;
 }
 void DevicesController::subscriber_action_mqtt(String topic, JsonDocument doc) {
     for(int i = 0; i < size; i++) {
