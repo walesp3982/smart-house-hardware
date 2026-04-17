@@ -13,5 +13,11 @@ public:
     std::vector<Publish> publish_mqtt();
     std::vector<String> get_subscribe_topics();
     void state_device_i2c(I2CPacket &pkt);
+    void change_state(bool _state) {
+        state = _state;
+    }
+    bool get_state() {
+        return state;
+    }
     I2CPacket set_device_i2c();
 };

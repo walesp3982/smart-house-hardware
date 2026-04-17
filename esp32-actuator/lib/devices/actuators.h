@@ -23,9 +23,24 @@ public:
     uint8_t bit_state;
     TypeActuator type;
     StateActuator state;
-
+    
     Actuator(String _uuid, uint8_t _bit_state, TypeActuator _type)
         : uuid(_uuid), bit_state(_bit_state), type(_type), state(StateActuator::OFF) {}
+
+    void change_state(bool turn_on) {
+        if (turn_on) {
+            state = StateActuator::ON;
+        } else {
+            state = StateActuator::OFF;
+        }
+    }
+
+    bool get_state() {
+        if (state == StateActuator::ON){
+            return true;
+        }
+        return false;
+    }
 };
 
 constexpr uint8_t MAX_ACTUATORS = 8;
