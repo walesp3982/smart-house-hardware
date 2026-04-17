@@ -279,13 +279,13 @@ void setup()
     /**
      * Agregamos los actuadores a actuatorscontroller
      */
-    door_principal = new Actuator(UUID_PUERTA_PRINCIPAL, 0, TypeActuator::DOOR, namespace_door_principal);
-    door_garage = new Actuator(UUID_PUERTA_GARAGE, 1, TypeActuator::DOOR, namespace_door_garage);
-    door_dormitorio = new Actuator(UUID_PUERTA_DORMITORIO, 2, TypeActuator::DOOR, namespace_door_dormitorio);
-    luz_garage = new Actuator(UUID_LUZ_GARAGE, 3, TypeActuator::LIGHT, namespace_luz_garage);
-    luz_dormitorio = new Actuator(UUID_LUZ_DORMITORIO, 4, TypeActuator::LIGHT, namespace_luz_dormitorio);
-    luz_sala = new Actuator(UUID_LUZ_SALA, 5, TypeActuator::LIGHT, namespace_luz_sala);
-    luz_cocina = new Actuator(UUID_LUZ_COCINA, 6, TypeActuator::LIGHT, namespace_luz_cocina);
+    door_principal = new Actuator(UUID_PUERTA_PRINCIPAL, 0, TypeActuator::DOOR);
+    door_garage = new Actuator(UUID_PUERTA_GARAGE, 1, TypeActuator::DOOR);
+    door_dormitorio = new Actuator(UUID_PUERTA_DORMITORIO, 2, TypeActuator::DOOR);
+    luz_garage = new Actuator(UUID_LUZ_GARAGE, 3, TypeActuator::LIGHT);
+    luz_dormitorio = new Actuator(UUID_LUZ_DORMITORIO, 4, TypeActuator::LIGHT);
+    luz_sala = new Actuator(UUID_LUZ_SALA, 5, TypeActuator::LIGHT);
+    luz_cocina = new Actuator(UUID_LUZ_COCINA, 6, TypeActuator::LIGHT);
 
     preferences.begin(namespace_actuators.c_str(), true);
     bool state_door_principal = preferences.getBool(namespace_door_principal.c_str(), false);

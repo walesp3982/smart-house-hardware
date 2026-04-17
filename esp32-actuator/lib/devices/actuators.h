@@ -23,15 +23,9 @@ public:
     uint8_t bit_state;
     TypeActuator type;
     StateActuator state;
-    String naming_pref;
     
     Actuator(String _uuid, uint8_t _bit_state, TypeActuator _type)
         : uuid(_uuid), bit_state(_bit_state), type(_type), state(StateActuator::OFF) {}
-
-    Actuator(String _uuid, uint8_t _bit_state, TypeActuator _type, String _naming_pref)
-        : uuid(_uuid), bit_state(_bit_state), type(_type), state(StateActuator::ON) {
-            naming_pref = _naming_pref;
-        }
 
     void change_state(bool turn_on) {
         if (turn_on) {
