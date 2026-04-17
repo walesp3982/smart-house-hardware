@@ -276,6 +276,8 @@ void setup()
 {
     Serial.begin(115200);
 
+    preferences.begin("mi-app", false);
+    preferences.end();
     /**
      * Agregamos los actuadores a actuatorscontroller
      */
