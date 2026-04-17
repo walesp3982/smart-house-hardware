@@ -10,6 +10,7 @@
 #include "controller.h"
 #include "movement.h"
 #include "thermostat.h"
+#include <Preferences.h>
 
 Actuator *door_principal;
 
@@ -39,6 +40,21 @@ PubSubClient *mqtt;
 
 static char mqtt_client_id[32] = {0};
 static unsigned long last_status_poll = 0;
+
+String namespace_actuators = "actuators";
+String namespace_door_garage = "P1";
+String namespace_door_dormitorio = "P2"; 
+String namespace_door_principal = "P3";
+String namespace_luz_garage = "P4"; 
+String namespace_luz_dormitorio = "L1";
+String namespace_luz_sala = "L2";
+String namespace_luz_cocina = "L3";
+String namespace_movement = "M1";
+String namespace_temperature = "T1_status";
+String namespace_temperature_enable_auto = "T1_auto";
+String namespace_temperature_limit = "T1_limit_temp";
+
+Preferences preferences;
 
 static void init_mqtt_client_id()
 {
@@ -232,16 +248,37 @@ void setup()
     /**
      * Agregamos los actuadores a actuatorscontroller
      */
-    door_principal = new Actuator(UUID_PUERTA_PRINCIPAL, 0, TypeActuator::DOOR);
-    door_garage = new Actuator(UUID_PUERTA_GARAGE, 1, TypeActuator::DOOR);
-    door_dormitorio = new Actuator(UUID_PUERTA_DORMITORIO, 2, TypeActuator::DOOR);
-    luz_garage = new Actuator(UUID_LUZ_GARAGE, 3, TypeActuator::LIGHT);
-    luz_dormitorio = new Actuator(UUID_LUZ_DORMITORIO, 4, TypeActuator::LIGHT);
-    luz_sala = new Actuator(UUID_LUZ_SALA, 5, TypeActuator::LIGHT);
-    luz_cocina = new Actuator(UUID_LUZ_COCINA, 6, TypeActuator::LIGHT);
+    door_principal = new Actuator(UUID_PUERTA_PRINCIPAL, 0, TypeActuator::DOOR, namespace_door_principal);
+    door_garage = new Actuator(UUID_PUERTA_GARAGE, 1, TypeActuator::DOOR, namespace_door_garage);
+    door_dormitorio = new Actuator(UUID_PUERTA_DORMITORIO, 2, TypeActuator::DOOR, namespace_door_dormitorio);
+    luz_garage = new Actuator(UUID_LUZ_GARAGE, 3, TypeActuator::LIGHT, namespace_luz_garage);
+    luz_dormitorio = new Actuator(UUID_LUZ_DORMITORIO, 4, TypeActuator::LIGHT, namespace_luz_dormitorio);
+    luz_sala = new Actuator(UUID_LUZ_SALA, 5, TypeActuator::LIGHT, namespace_luz_sala);
+    luz_cocina = new Actuator(UUID_LUZ_COCINA, 6, TypeActuator::LIGHT, namespace_luz_cocina);
+
+    preferences.begin(namespace_actuators.c_str(), true);
+    bool state_door_principal = preferences.getBool(namespace_door_principal.c_str(), false);
+    bool state_door_garage = preferences.getBool(namespace_door_garage.c_str(), false);
+    bool state_door_dormitorio = preferences.getBool(namespace_door_dormitorio.c_str(), false);
+    bool state_luz_garage = preferences.getBool(namespace_luz_garage.c_str(), false);
+    bool state_luz_dormitorio = preferences.getBool(namespace_luz_dormitorio.c_str(), false);
+    bool state_luz_sala = preferences.getBool(namespace_luz_sala.c_str(), false);
+    bool state_luz_cocina = preferences.getBool(namespace_luz_cocina.c_str(), false);
+    bool state_movement = preferences.getBool(namespace_movement.c_str(), false);
+    bool state_temperature = preferences.getBool(namespace_temperature.c_str(), false);
+    bool state_temperature_auto = preferences.getBool(namespace_temperature_enable_auto.c_str(), false);
+    uint8_t state_temperature_limit = preferences.getUInt(namespace_temperature_limit.c_str(), 50);
+    preferences.end();
+
+    door_principal->change_state(state_door_principal);
+    door_garage->change_state(state_door_garage);
+    door_dormitorio->change_state(state_door_dormitorio);
+    luz_garage->change_state(state_luz_garage);
+    luz_dormitorio->change_state(state_luz_dormitorio);
+    luz_sala->change_state(state_luz_sala);
+    luz_cocina->change_state(state_luz_cocina);
 
     actuator_controller = new ActuatorsController(ADDR_ACTUATORS, NODE_ID_ACTUATORS);
-
     actuator_controller->add_actuators(door_principal);
     actuator_controller->add_actuators(door_garage);
     actuator_controller->add_actuators(door_dormitorio);
@@ -251,12 +288,14 @@ void setup()
     actuator_controller->add_actuators(luz_cocina);
 
     temperature_controller = new TemperatureController(UUID_SENSOR_TEMPERATURE, ADDR_TEMPERATURE, NODE_ID_TEMPERATURE);
-    move_controller = new MoveController(UUID_SENSOR_MOVIMIENTO, ADDR_ALARM, NODE_ID_ALARM);
+    temperature_controller->change_state(state_temperature_limit, state_temperature, state_temperature_auto);
 
+    move_controller = new MoveController(UUID_SENSOR_MOVIMIENTO, ADDR_ALARM, NODE_ID_ALARM);
+    move_controller->change_state(state_movement);
     /**
      * Agregamos los arduinos al controlador
      */
-    Serial.print("Startingt devices controlller...");
+    Serial.print("Starting devices controlller...");
     devices_controller = new DevicesController();
     devices_controller->add_arduino(actuator_controller);
     devices_controller->add_arduino(temperature_controller);
