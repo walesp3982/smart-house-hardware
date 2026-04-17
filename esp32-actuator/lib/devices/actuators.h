@@ -33,12 +33,19 @@ public:
             naming_pref = _naming_pref;
         }
 
-    bool change_state(bool turn_on) {
+    void change_state(bool turn_on) {
         if (turn_on) {
             state = StateActuator::ON;
         } else {
             state = StateActuator::OFF;
         }
+    }
+
+    bool get_state() {
+        if (state == StateActuator::ON){
+            return true;
+        }
+        return false;
     }
 };
 

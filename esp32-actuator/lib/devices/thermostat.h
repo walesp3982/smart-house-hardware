@@ -17,6 +17,16 @@ public:
         state = _state;
         enable_auto = _enable_auto;
     }
+    uint8_t get_temp_timit() {
+        return temp_limit;
+    }
+    bool get_enable_auto() {
+        return enable_auto;
+    }
+
+    bool get_state() {
+        return state;
+    }
     I2CPacket set_device_i2c();
 };
 

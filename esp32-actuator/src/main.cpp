@@ -241,6 +241,35 @@ static void mqtt_connect()
     delay(500);
 }
 
+void save_status() {
+    bool state_door_principal = door_principal->get_state();
+    bool state_door_garage = door_garage->get_state();
+    bool state_door_dormitorio = door_dormitorio->get_state();
+    bool state_luz_garage = luz_garage->get_state();
+    bool state_luz_dormitorio = luz_dormitorio->get_state();
+    bool state_luz_sala = luz_sala->get_state();
+    bool state_luz_cocina = luz_cocina->get_state();
+    bool state_movement = move_controller->get_state();
+    bool state_temperature_state = temperature_controller->get_state();
+    bool state_temperature_auto = temperature_controller->get_enable_auto();
+    uint8_t state_temperature_limit = temperature_controller->get_temp_timit();
+    preferences.begin("my-app", false);
+
+    preferences.putBool(namespace_door_principal.c_str(), state_door_principal);
+    preferences.putBool(namespace_door_garage.c_str(), state_door_garage);
+    preferences.putBool(namespace_door_dormitorio.c_str(), state_door_dormitorio);
+    preferences.putBool(namespace_luz_garage.c_str(), state_luz_garage);
+    preferences.putBool(namespace_luz_dormitorio.c_str(), state_luz_dormitorio);
+    preferences.putBool(namespace_luz_sala.c_str(), state_luz_sala);
+    preferences.putBool(namespace_luz_cocina.c_str(), state_luz_cocina);
+    preferences.putBool(namespace_movement.c_str(), state_movement);
+    preferences.putBool(namespace_temperature.c_str(), state_temperature_state);
+    preferences.putBool(namespace_temperature_enable_auto.c_str(), state_temperature_auto);
+    preferences.putUInt(namespace_temperature_limit.c_str(), state_temperature_limit);
+
+    preferences.end();
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -341,6 +370,7 @@ void setup()
 
 static unsigned long last_mqtt_publish = 0;
 static unsigned long last_i2c_sync = 0;
+static unsigned long last_save_persistence = 0;
 
 void loop()
 {
@@ -399,5 +429,12 @@ void loop()
             }
         }
         last_i2c_sync = now;
+    }
+
+    if (now - last_save_persistence > 3000) // Guardar estado cada 10 segundos
+    {
+        Serial.println("[LOOP] Guardando estado en persistencia...");
+        save_status();
+        last_save_persistence = now;
     }
 }
