@@ -242,6 +242,7 @@ static void mqtt_connect()
 }
 
 void save_status() {
+    // Obtenemos el estado actual de todos los dispositivos
     bool state_door_principal = door_principal->get_state();
     bool state_door_garage = door_garage->get_state();
     bool state_door_dormitorio = door_dormitorio->get_state();
@@ -253,8 +254,9 @@ void save_status() {
     bool state_temperature_state = temperature_controller->get_state();
     bool state_temperature_auto = temperature_controller->get_enable_auto();
     uint8_t state_temperature_limit = temperature_controller->get_temp_timit();
-    preferences.begin("my-app", false);
 
+    // Guardamos el estado en la memoria persistente
+    preferences.begin("my-app", false);
     preferences.putBool(namespace_door_principal.c_str(), state_door_principal);
     preferences.putBool(namespace_door_garage.c_str(), state_door_garage);
     preferences.putBool(namespace_door_dormitorio.c_str(), state_door_dormitorio);
