@@ -255,8 +255,30 @@ void save_status() {
     bool state_temperature_auto = temperature_controller->get_enable_auto();
     uint8_t state_temperature_limit = temperature_controller->get_temp_timit();
 
+    Serial.print("Estado persistente - Puerta Principal: ");
+    Serial.println(state_door_principal ? "Abierta" : "Cerrada");
+    Serial.print("Estado persistente - Puerta Garage: ");
+    Serial.println(state_door_garage ? "Abierta" : "Cerrada");
+    Serial.print("Estado persistente - Puerta Dormitorio: ");
+    Serial.println(state_door_dormitorio ? "Abierta" : "Cerrada");
+    Serial.print("Estado persistente - Luz Garage: ");
+    Serial.println(state_luz_garage ? "Encendida" : "Apagada");
+    Serial.print("Estado persistente - Luz Dormitorio: ");
+    Serial.println(state_luz_dormitorio ? "Encendida" : "Apagada");
+    Serial.print("Estado persistente - Luz Sala: ");
+    Serial.println(state_luz_sala ? "Encendida" : "Apagada");
+    Serial.print("Estado persistente - Luz Cocina: ");
+    Serial.println(state_luz_cocina ? "Encendida" : "Apagada");
+    Serial.print("Estado persistente - Movimiento: ");
+    Serial.println(state_movement ? "Encendido" : "Apagado");
+    Serial.print("Estado persistente - Temperatura: ");
+    Serial.println(state_temperature_state ? "Encendida" : "Apagada");
+    Serial.print("Estado persistente - Temperatura Auto: ");
+    Serial.println(state_temperature_auto ? "Habilitada" : "Deshabilitada");
+    Serial.print("Estado persistente - Temperatura Límite: ");
+    Serial.println(state_temperature_limit);
     // Guardamos el estado en la memoria persistente
-    preferences.begin("my-app", false);
+    preferences.begin(namespace_actuators.c_str(), false);
     preferences.putBool(namespace_door_principal.c_str(), state_door_principal);
     preferences.putBool(namespace_door_garage.c_str(), state_door_garage);
     preferences.putBool(namespace_door_dormitorio.c_str(), state_door_dormitorio);
@@ -276,8 +298,6 @@ void setup()
 {
     Serial.begin(115200);
 
-    preferences.begin("mi-app", false);
-    preferences.end();
     /**
      * Agregamos los actuadores a actuatorscontroller
      */
@@ -289,7 +309,7 @@ void setup()
     luz_sala = new Actuator(UUID_LUZ_SALA, 5, TypeActuator::LIGHT);
     luz_cocina = new Actuator(UUID_LUZ_COCINA, 6, TypeActuator::LIGHT);
 
-    preferences.begin(namespace_actuators.c_str(), true);
+    preferences.begin(namespace_actuators.c_str(), false);
     bool state_door_principal = preferences.getBool(namespace_door_principal.c_str(), false);
     bool state_door_garage = preferences.getBool(namespace_door_garage.c_str(), false);
     bool state_door_dormitorio = preferences.getBool(namespace_door_dormitorio.c_str(), false);
@@ -302,6 +322,29 @@ void setup()
     bool state_temperature_auto = preferences.getBool(namespace_temperature_enable_auto.c_str(), false);
     uint8_t state_temperature_limit = preferences.getUInt(namespace_temperature_limit.c_str(), 50);
     preferences.end();
+
+    Serial.print("Estado persistente - Puerta Principal: ");
+    Serial.println(state_door_principal ? "Abierta" : "Cerrada");
+    Serial.print("Estado persistente - Puerta Garage: ");
+    Serial.println(state_door_garage ? "Abierta" : "Cerrada");
+    Serial.print("Estado persistente - Puerta Dormitorio: ");
+    Serial.println(state_door_dormitorio ? "Abierta" : "Cerrada");
+    Serial.print("Estado persistente - Luz Garage: ");
+    Serial.println(state_luz_garage ? "Encendida" : "Apagada");
+    Serial.print("Estado persistente - Luz Dormitorio: ");
+    Serial.println(state_luz_dormitorio ? "Encendida" : "Apagada");
+    Serial.print("Estado persistente - Luz Sala: ");
+    Serial.println(state_luz_sala ? "Encendida" : "Apagada");
+    Serial.print("Estado persistente - Luz Cocina: ");
+    Serial.println(state_luz_cocina ? "Encendida" : "Apagada");
+    Serial.print("Estado persistente - Movimiento: ");
+    Serial.println(state_movement ? "Encendido" : "Apagado");
+    Serial.print("Estado persistente - Temperatura: ");
+    Serial.println(state_temperature ? "Encendida" : "Apagada");
+    Serial.print("Estado persistente - Temperatura Auto: ");
+    Serial.println(state_temperature_auto ? "Habilitada" : "Deshabilitada");
+    Serial.print("Estado persistente - Temperatura Límite: ");
+    Serial.println(state_temperature_limit);
 
     door_principal->change_state(state_door_principal);
     door_garage->change_state(state_door_garage);
@@ -337,6 +380,24 @@ void setup()
     Wire.begin();
     Serial.println("Wire ok");
 
+    // Enviar estados de persistencia al Arduino ANTES de conectar WiFi
+    Serial.println("[SETUP] Sincronizando persistencia con Arduino...");
+    std::vector<I2CBoxing> persistence_packets = devices_controller->send_i2c();
+    Serial.printf("[SETUP] Enviando %d paquetes de persistencia\n", persistence_packets.size());
+    
+    for (const I2CBoxing &packet : persistence_packets)
+    {
+        bool success = i2c_write_packet(packet.address, packet.pkt);
+        if (!success)
+        {
+            Serial.printf("[SETUP] Fallo al enviar persistencia a 0x%02X\n", packet.address);
+        }
+        else
+        {
+            Serial.printf("[SETUP] ✓ Persistencia enviada a 0x%02X\n", packet.address);
+        }
+    }
+
     Serial.println("Connecting wifi...");
     Serial.println("Escaneando redes...");
     int n = WiFi.scanNetworks();
@@ -358,9 +419,9 @@ void setup()
     while (WiFi.status() != WL_CONNECTED)
     {
         Serial.print(".");
-        Serial.print("Status: ");
-        Serial.println(WiFi.status());
-        WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+        // Serial.print("Status: ");
+        // Serial.println(WiFi.status());
+        // WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
         delay(500);
     }
 
