@@ -23,6 +23,8 @@ Actuator *luz_dormitorio;
 Actuator *luz_sala;
 Actuator *luz_cocina;
 
+constexpr int CHIP_ID = 12;
+
 constexpr uint8_t ADDR_ALARM = 0x08;
 constexpr uint8_t ADDR_ACTUATORS = 0x09;
 constexpr uint8_t ADDR_TEMPERATURE = 0x0A;
@@ -43,9 +45,9 @@ static unsigned long last_status_poll = 0;
 
 String namespace_actuators = "actuators";
 String namespace_door_garage = "P1";
-String namespace_door_dormitorio = "P2"; 
+String namespace_door_dormitorio = "P2";
 String namespace_door_principal = "P3";
-String namespace_luz_garage = "P4"; 
+String namespace_luz_garage = "P4";
 String namespace_luz_dormitorio = "L1";
 String namespace_luz_sala = "L2";
 String namespace_luz_cocina = "L3";
@@ -214,17 +216,24 @@ static void mqtt_message_callback(char *topic, byte *payload, unsigned int lengt
 static void mqtt_connect()
 {
     if (mqtt->connected())
+    {
         return;
-
+    }
     static unsigned long last_attempt = 0;
     unsigned long now = millis();
 
     if (now - last_attempt < 500)
+    {
         return;
+    }
     last_attempt = now;
 
-    if (mqtt->connect(mqtt_client_id, MQTT_USER, MQTT_PASSWORD))
+    if (mqtt->connect(mqtt_client_id, MQTT_USER, MQTT_PASSWORD,
+                      "/esp-abc123/status", 1, true, "offline"))
     {
+        Serial.println("[MQTT] Conectado al broker MQTT");
+
+        mqtt->publish("/esp-abc123/status", "online", true);
         // Suscribirse a todos los topics de los devices
         for (const String &topic : devices_controller->get_topics_devices())
         {
@@ -241,7 +250,8 @@ static void mqtt_connect()
     delay(500);
 }
 
-void save_status() {
+void save_status()
+{
     // Obtenemos el estado actual de todos los dispositivos
     bool state_door_principal = door_principal->get_state();
     bool state_door_garage = door_garage->get_state();
@@ -384,7 +394,7 @@ void setup()
     Serial.println("[SETUP] Sincronizando persistencia con Arduino...");
     std::vector<I2CBoxing> persistence_packets = devices_controller->send_i2c();
     Serial.printf("[SETUP] Enviando %d paquetes de persistencia\n", persistence_packets.size());
-    
+
     for (const I2CBoxing &packet : persistence_packets)
     {
         bool success = i2c_write_packet(packet.address, packet.pkt);
