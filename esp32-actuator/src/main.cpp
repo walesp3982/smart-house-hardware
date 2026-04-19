@@ -40,7 +40,7 @@ DevicesController *devices_controller;
 WiFiClient wifiClient;
 PubSubClient *mqtt;
 
-static char mqtt_client_id[32] = {0};
+static char mqtt_client_id[32] = "esp32-abc123";
 static unsigned long last_status_poll = 0;
 
 String namespace_actuators = "actuators";
@@ -229,11 +229,11 @@ static void mqtt_connect()
     last_attempt = now;
 
     if (mqtt->connect(mqtt_client_id, MQTT_USER, MQTT_PASSWORD,
-                      "/esp-abc123/status", 1, true, "offline"))
+                      "/esp32-abc123/status", 1, true, "offline"))
     {
         Serial.println("[MQTT] Conectado al broker MQTT");
 
-        mqtt->publish("/esp-abc123/status", "online", true);
+        mqtt->publish("/esp32-abc123/status", "online", true);
         // Suscribirse a todos los topics de los devices
         for (const String &topic : devices_controller->get_topics_devices())
         {
