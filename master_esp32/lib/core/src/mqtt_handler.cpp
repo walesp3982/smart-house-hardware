@@ -57,11 +57,11 @@ static void on_message(char* topic, byte* payload, unsigned int len) {
 }
 
 // ── Reconexión ──────────────────────────────────────────────────────────────
-static void reconnect() {
+static void reconnect(const char* chip_id) {
     while (!mqtt.connected()) {
         Serial.print("[MQTT] Conectando...");
         // Client ID único por dispositivo = UUID
-        if (mqtt.connect(_topic_set, _user, _pass, "/espcam-abc123", 1, true, "offline" )) {   // reusa el topic como client ID
+        if (mqtt.connect(chip_id, _user, _pass, "/espcam-abc123", 1, true, "offline" )) {   // reusa el topic como client ID
             Serial.println(" OK");
             mqtt.subscribe(_topic_set);
             Serial.printf("[MQTT] Suscrito a %s\n", _topic_set);
@@ -75,7 +75,7 @@ static void reconnect() {
     }
 }
 
-void mqtt_setup(const char* uuid, const char* user, const char* pass) {
+void mqtt_setup(const char* uuid, const char* user, const char* pass, const char* chip_id) {
     _user = user;
     _pass = pass;
 
@@ -89,10 +89,10 @@ void mqtt_setup(const char* uuid, const char* user, const char* pass) {
     mqtt.setCallback(on_message);
     mqtt.setBufferSize(512);
 
-    reconnect();
+    reconnect(chip_id);
 }
 
-void mqtt_loop() {
-    if (!mqtt.connected()) reconnect();
+void mqtt_loop(const char* chip_id) {
+    if (!mqtt.connected()) reconnect(chip_id);
     mqtt.loop();
 }

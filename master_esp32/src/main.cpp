@@ -109,10 +109,10 @@ static void start_http_server() {
 // ── Setup ───────────────────────────────────────────────────────────────────
 void setup() {
     Serial.begin(115200);
-
+    delay(1000);
     // WiFi
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     Serial.print("[WiFi] Conectando");
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
@@ -133,7 +133,7 @@ void setup() {
     start_http_server();
 
     // MQTT
-    mqtt_setup(CHIP_ID, MQTT_USER, MQTT_PASSWORD);
+    mqtt_setup(UUID_CAMERA, MQTT_USER, MQTT_PASSWORD, CHIP_ID);
 }
 
 
@@ -153,7 +153,7 @@ static long last_persistence_update = 0;
 void loop() {
     unsigned long now = millis();
 
-    mqtt_loop();
+    mqtt_loop(CHIP_ID);
     delay(10);
 
     // Guardamos el estado de la cámara cada 2 segundos
