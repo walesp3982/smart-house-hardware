@@ -18,7 +18,7 @@ static PubSubClient mqtt(wifiClient);
 
 // ── Publicar estado actual ──────────────────────────────────────────────────
 void mqtt_publish_state(bool camera_active, const char* stream_url) {
-    StaticJsonDocument<200> doc;
+    JsonDocument doc;
     doc["state"]      = camera_active ? "on" : "off";
     doc["stream_url"] = camera_active ? stream_url : "";
     doc["ip"]         = WiFi.localIP().toString();
@@ -31,7 +31,7 @@ void mqtt_publish_state(bool camera_active, const char* stream_url) {
 // ── Callback de mensajes entrantes ─────────────────────────────────────────
 static void on_message(char* topic, byte* payload, unsigned int len) {
     // Deserializar payload JSON
-    StaticJsonDocument<200> doc;
+    JsonDocument doc;
     DeserializationError err = deserializeJson(doc, payload, len);
     if (err) {
         Serial.printf("[MQTT] JSON inválido: %s\n", err.c_str());
@@ -57,15 +57,16 @@ static void on_message(char* topic, byte* payload, unsigned int len) {
 }
 
 // ── Reconexión ──────────────────────────────────────────────────────────────
-static void reconnect() {
+static void reconnect(const char* chip_id) {
     while (!mqtt.connected()) {
         Serial.print("[MQTT] Conectando...");
         // Client ID único por dispositivo = UUID
-        if (mqtt.connect(_topic_set, _user, _pass)) {   // reusa el topic como client ID
+        if (mqtt.connect(chip_id, _user, _pass, "/espcam-abc123", 1, true, "offline" )) {   // reusa el topic como client ID
             Serial.println(" OK");
             mqtt.subscribe(_topic_set);
             Serial.printf("[MQTT] Suscrito a %s\n", _topic_set);
             // Publicar estado inicial al reconectar
+            mqtt.publish("/espcam-abc123/status", "online", true);
             mqtt_publish_state(camera_is_active(), _stream_url.c_str());
         } else {
             Serial.printf(" fallo rc=%d, reintentando en 3s\n", mqtt.state());
@@ -74,7 +75,7 @@ static void reconnect() {
     }
 }
 
-void mqtt_setup(const char* uuid, const char* user, const char* pass) {
+void mqtt_setup(const char* uuid, const char* user, const char* pass, const char* chip_id) {
     _user = user;
     _pass = pass;
 
@@ -88,10 +89,10 @@ void mqtt_setup(const char* uuid, const char* user, const char* pass) {
     mqtt.setCallback(on_message);
     mqtt.setBufferSize(512);
 
-    reconnect();
+    reconnect(chip_id);
 }
 
-void mqtt_loop() {
-    if (!mqtt.connected()) reconnect();
+void mqtt_loop(const char* chip_id) {
+    if (!mqtt.connected()) reconnect(chip_id);
     mqtt.loop();
 }
