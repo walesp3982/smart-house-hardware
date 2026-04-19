@@ -3,6 +3,8 @@
 #include "esp_http_server.h"
 #include "camera.h"
 #include "mqtt_handler.h"
+#include "generated_devices.h"
+#include <Preferences.h>
 
 // Provistos por build_flags en platformio.ini
 #ifndef MQTT_USER
@@ -12,13 +14,14 @@
   #define MQTT_PASSWORD
  ""
 #endif
-#ifndef CAMERA_UUID
-  #define CAMERA_UUID "00000000-0000-0000-0000-000000000000"
+#ifndef UUID_CAMERA
+  #define UUID_CAMERA "00000000-0000-0000-0000-000000000000"
 #endif
 
 
 static httpd_handle_t server = nullptr;
-
+char CHIP_ID[30] = "espcam-abc123";
+Preferences preferences;
 // ── Handler: MJPEG stream ───────────────────────────────────────────────────
 static esp_err_t stream_handler(httpd_req_t* req) {
     if (!camera_is_active()) {
@@ -106,10 +109,10 @@ static void start_http_server() {
 // ── Setup ───────────────────────────────────────────────────────────────────
 void setup() {
     Serial.begin(115200);
-
+    delay(1000);
     // WiFi
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     Serial.print("[WiFi] Conectando");
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
@@ -119,16 +122,44 @@ void setup() {
     // Cámara — arranca activa por defecto
     camera_init();
 
+    preferences.begin("my-app", false);
+    bool camera_state = preferences.getBool("camera_state", true);  // por defecto on
+    camera_set_active(camera_state);
+    Serial.print("Estado persistente - Cámara: ");
+    Serial.println(camera_state ? "Encendida" : "Apagada");
+    preferences.end();
+
     // Servidor HTTP
     start_http_server();
 
     // MQTT
-    mqtt_setup(CAMERA_UUID, MQTT_USER, MQTT_PASSWORD
-  );
+    mqtt_setup(UUID_CAMERA, MQTT_USER, MQTT_PASSWORD, CHIP_ID);
 }
 
+
+void save_status_camera() {
+    preferences.begin("my-app", false);
+    bool camera_state = camera_is_active();
+    preferences.putBool("camera_state", camera_state);
+    Serial.print("Estado persistente - Cámara: ");
+    Serial.println(camera_state ? "Encendida" : "Apagada");
+    preferences.end();
+}
+
+static long last_persistence_update = 0;
 // ── Loop ────────────────────────────────────────────────────────────────────
+
+
 void loop() {
-    mqtt_loop();
+    unsigned long now = millis();
+
+    mqtt_loop(CHIP_ID);
     delay(10);
+
+    // Guardamos el estado de la cámara cada 2 segundos
+    // (o cuando cambie) para tener persistencia en caso de reinicio o fallo)
+    if (now - last_persistence_update > 2000) {   // cada 60 segundos
+        save_status_camera();
+        last_persistence_update = now;
+    }
 }

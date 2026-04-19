@@ -1,32 +1,44 @@
 #include <thermostat.h>
 #include <builder.h>
-TemperatureController::TemperatureController(String _uuid, uint8_t _address, uint8_t _node_id) {
+TemperatureController::TemperatureController(String _uuid, uint8_t _address, uint8_t _node_id)
+{
     uuid = _uuid;
     address_i2c = _address;
     node_id = _node_id;
 }
 
-void TemperatureController::subscriber_mqtt(String topic, JsonDocument doc) {
-    if(!is_topic_set_device(topic, uuid)) {
+void TemperatureController::subscriber_mqtt(String topic, JsonDocument doc)
+{
+    if (!is_topic_set_device(topic, uuid))
+    {
         return;
     }
     bool has_enable_auto = !doc["enable_auto"].isNull();
-    if (has_enable_auto) {
+    if (has_enable_auto)
+    {
         enable_auto = doc["enable_auto"].as<bool>();
     }
 
-    bool has_action = !doc["action"].isNull();
-    if (has_action) {
-        has_action = doc["action"].as<bool>();
+    const char *action = doc["action"];
+    if (!action)
+    {
+        return;
     }
-
+    if (strcmp(action, "on") == 0) {
+        state = true;
+    } else if (strcmp(action, "off") == 0) {
+        state = false;
+    }
+    
     bool has_limit = !doc["temperature_limit"].isNull();
-    if (has_limit) {
+    if (has_limit)
+    {
         temp_limit = static_cast<uint8_t>(doc["temperature_limit"].as<int>());
     }
 }
 
-std::vector<Publish> TemperatureController::publish_mqtt() {
+std::vector<Publish> TemperatureController::publish_mqtt()
+{
     std::vector<Publish> publish;
 
     String response = JsonBuilder::temperatureState(state, temp_limit, enable_auto);
@@ -36,10 +48,17 @@ std::vector<Publish> TemperatureController::publish_mqtt() {
     return publish;
 }
 
-I2CPacket TemperatureController::set_device_i2c() {
+std::vector<String> TemperatureController::get_subscribe_topics() {
+    std::vector<String> topics;
+
+    topics.push_back(generate_set_topic(uuid));
+    return topics;
+}
+I2CPacket TemperatureController::set_device_i2c()
+{
     I2CPacket pkt;
     uint8_t data = 0x00;
-    
+
     uint8_t state_bit = (state) ? 0x40 : 0x00;
     uint8_t auto_bit = enable_auto ? 0x80 : 0x00;
     data = auto_bit | state_bit | (temp_limit & 0x03F);
@@ -51,11 +70,13 @@ I2CPacket TemperatureController::set_device_i2c() {
     return pkt;
 }
 
-void TemperatureController::state_device_i2c(I2CPacket &pkt) {
+void TemperatureController::state_device_i2c(I2CPacket &pkt)
+{
     // TODO: CORREGIR PARA AGREGAR LA TEMPERATURA
-    if (pkt.cmd == CMD_SET) {
+    if (pkt.cmd == CMD_SET)
+    {
         enable_auto = (pkt.data >> 7) & 0x01;
         temp_limit = pkt.data & 0x3F;
-        state = (pkt.data >> 6 ) & 0x01;
+        state = (pkt.data >> 6) & 0x01;
     }
 }

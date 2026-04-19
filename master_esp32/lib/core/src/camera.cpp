@@ -37,8 +37,8 @@ bool camera_init() {
     config.pin_pclk     = PCLK_GPIO;
     config.pin_vsync    = VSYNC_GPIO;
     config.pin_href     = HREF_GPIO;
-    config.pin_sscb_sda = SIOD_GPIO;
-    config.pin_sscb_scl = SIOC_GPIO;
+    config.pin_sccb_sda = SIOD_GPIO;
+    config.pin_sccb_scl = SIOC_GPIO;
     config.pin_pwdn     = PWDN_GPIO;
     config.pin_reset    = RESET_GPIO;
     config.xclk_freq_hz = 20000000;

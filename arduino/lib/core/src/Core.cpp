@@ -70,6 +70,10 @@ uint8_t IDevice::get_bit_i2c() {
 
 DevicesController::DevicesController(const char *name)
 {
+    _size = 0;
+    for (int i = 0; i < MAX_DEVICES; i++) {
+        _devices[i] = nullptr;
+    }
     strncpy(_name, name, sizeof(_name) - 1);
     _name[sizeof(_name) - 1] = '\0';
 }
@@ -77,9 +81,6 @@ DevicesController::DevicesController(const char *name)
 void DevicesController::add_device(IDevice *device)
 {
     if (_size >= MAX_DEVICES) {
-        SerialCaller::getInstance().send(
-            Message(MessageStatus::STATUS_ERROR, "", "WARNING Device LIMIT ERROR")
-        );
         return; 
     }
     _devices[_size++] = device;
@@ -129,7 +130,7 @@ void DevicesController::execute(Command &command)
 
 IDevice *DevicesController::get_device(int id)
 {
-    if (id < 0 || id > _size)
+    if (id < 0 || id >= _size)
         return NULL;
     return _devices[id];
 }

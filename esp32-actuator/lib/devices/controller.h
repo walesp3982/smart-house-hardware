@@ -21,6 +21,7 @@ public:
     // Configuración de i2c
     virtual void state_device_i2c(I2CPacket &ptk) = 0;
     virtual I2CPacket set_device_i2c() = 0; 
+    virtual std::vector<String> get_subscribe_topics() = 0;
     uint8_t get_address_i2c() {
         return address_i2c;
     }
@@ -30,6 +31,7 @@ public:
 };
 
 bool is_topic_set_device(String topic, String uuid);
+String generate_set_topic(String uuid);
 
 struct I2CBoxing {
     I2CPacket pkt;
@@ -56,10 +58,11 @@ private:
     uint8_t size;
 public: 
     DevicesController();
-    void add_arduino(ArduinoController &controller);
+    void add_arduino(ArduinoController *controller);
     void subscriber_action_mqtt(String topic, JsonDocument doc);
     std::vector<Publish> publish_action_mqtt();
     std::vector<I2CMetadata> address_nodes();
     std::vector<I2CBoxing> send_i2c();
+    std::vector<String> get_topics_devices();
     void received_i2c(std::vector<I2CPacket> &packets);
 };

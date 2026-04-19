@@ -4,7 +4,7 @@
 #include "Messenger.h"
 #include "Wire.h"
 
-const int BUFFER_SIZE = 50;
+const int BUFFER_SIZE = 32;  // Reducido de 50 para ahorrar RAM
 char inputBuffer[BUFFER_SIZE];
 uint8_t bufferIndex = 0;
 
@@ -33,7 +33,14 @@ Light luz_cocina(11, Data{"Luz cocina", "L3"}, BIT_LUZ_COCINA);
 #if MODE == 1
   static I2CPacket response;
   void onReceived(int bytes) {
+    Serial.print("[I2C_RX] PKT recibido bytes=");
+    Serial.println(bytes);
+    
     if(bytes != PKT_SIZE) {
+      Serial.print("[I2C_RX] ERROR: esperaba ");
+      Serial.print(PKT_SIZE);
+      Serial.print(" bytes, recibio ");
+      Serial.println(bytes);
       while(Wire.available()) Wire.read();
       return;
     }
@@ -44,18 +51,56 @@ Light luz_cocina(11, Data{"Luz cocina", "L3"}, BIT_LUZ_COCINA);
     pkt.data = Wire.read();
     pkt.checksum = Wire.read();
 
-    if(pkt.node_id != NODE_ID) return;
-    if(!pkt_valid(pkt)) return;
+    Serial.print("[I2C_RX] node_id=");
+    Serial.print(pkt.node_id);
+    Serial.print(" cmd=0x");
+    Serial.print(pkt.cmd, HEX);
+    Serial.print(" data=0x");
+    Serial.print(pkt.data, HEX);
+    Serial.print(" checksum=0x");
+    Serial.println(pkt.checksum, HEX);
+    
+    Serial.print("[I2C_RX] NODE_ID esperado=");
+    Serial.println(NODE_ID);
+
+    if(pkt.node_id != NODE_ID) {
+      Serial.print("[I2C_RX] ERROR: node_id mismatch (recibido ");
+      Serial.print(pkt.node_id);
+      Serial.print(", esperado ");
+      Serial.println(NODE_ID);
+      return;
+    }
+    
+    uint8_t expected_checksum = pkt_checksum(pkt);
+    Serial.print("[I2C_RX] checksum recibido=0x");
+    Serial.print(pkt.checksum, HEX);
+    Serial.print(", calculado=0x");
+    Serial.println(expected_checksum, HEX);
+    
+    if(!pkt_valid(pkt)) {
+      Serial.println("[I2C_RX] ERROR: checksum invalido");
+      return;
+    }
+
+    Serial.print("[I2C_RX] Paquete valido, ejecutando CMD=0x");
+    Serial.println(pkt.cmd, HEX);
 
     switch (pkt.cmd)
     {
     case CMD_SET:
+      Serial.print("[I2C_RX] Ejecutando CMD_SET con data=0x");
+      Serial.println(pkt.data, HEX);
       controller.execute_i2c(pkt);
       break;
     case CMD_STATUS:
+      Serial.println("[I2C_RX] CMD_STATUS");
+      break;
     case CMD_PING:
+      Serial.println("[I2C_RX] CMD_PING");
       break;
     default:
+      Serial.print("[I2C_RX] CMD desconocido: 0x");
+      Serial.println(pkt.cmd, HEX);
       break;
     }
 
@@ -63,13 +108,20 @@ Light luz_cocina(11, Data{"Luz cocina", "L3"}, BIT_LUZ_COCINA);
     response.cmd = CMD_ACK;
     response.data = controller.get_status_devices_i2c();
     response.checksum = pkt_checksum(response);
+    
+    Serial.print("[I2C_TX_ACK] Enviando ACK con data=0x");
+    Serial.print(response.data, HEX);
+    Serial.print(" checksum=0x");
+    Serial.println(response.checksum, HEX);
   }
 
   void onRequest() {
     uint8_t* buf = (uint8_t*)&response;
     Wire.write(buf, PKT_SIZE);
+    Serial.println("[I2C_TX_REQ] onRequest enviado ACK");
   }
 #endif
+
 void setup() {
   // Setting Serialización
   MessageBuilder::getInstance().setDevice(NAMING);
@@ -94,6 +146,12 @@ void setup() {
     Wire.onReceive(onReceived);
     Wire.onRequest(onRequest);
     digitalWrite(LED_BUILTIN, HIGH);
+    Serial.print("[SETUP] I2C SLAVE MODE ACTIVO - Addr=0x");
+    Serial.print(I2C_SLAVE_ADDR, HEX);
+    Serial.print(" NodeID=");
+    Serial.println(NODE_ID);
+    Serial.print("SIZE:");
+    Serial.println(controller.get_size());
   #endif 
 }
 

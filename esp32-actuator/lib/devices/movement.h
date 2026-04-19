@@ -11,7 +11,13 @@ public:
     MoveController(String _uuid, uint8_t _address, uint8_t _node_id); 
     void subscriber_mqtt(String topic, JsonDocument doc);
     std::vector<Publish> publish_mqtt();
-
+    std::vector<String> get_subscribe_topics();
     void state_device_i2c(I2CPacket &pkt);
+    void change_state(bool _state) {
+        state = _state;
+    }
+    bool get_state() {
+        return state;
+    }
     I2CPacket set_device_i2c();
 };
