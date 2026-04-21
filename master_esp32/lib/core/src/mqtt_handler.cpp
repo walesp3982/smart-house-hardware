@@ -61,13 +61,15 @@ static void reconnect(const char* chip_id) {
     while (!mqtt.connected()) {
         Serial.print("[MQTT] Conectando...");
         // Client ID único por dispositivo = UUID
-        if (mqtt.connect(chip_id, _user, _pass, "/espcam-abc123", 1, true, "offline" )) {   // reusa el topic como client ID
+        if (mqtt.connect(chip_id, _user, _pass, "/espcam-abc123/status", 1, true, "offline" )) {   // reusa el topic como client ID
             Serial.println(" OK");
             mqtt.subscribe(_topic_set);
             Serial.printf("[MQTT] Suscrito a %s\n", _topic_set);
             // Publicar estado inicial al reconectar
             mqtt.publish("/espcam-abc123/status", "online", true);
             mqtt_publish_state(camera_is_active(), _stream_url.c_str());
+            Serial.println("[MQTT] Publicado estado de la cámara...");
+
         } else {
             Serial.printf(" fallo rc=%d, reintentando en 3s\n", mqtt.state());
             delay(3000);

@@ -158,7 +158,7 @@ void loop() {
 
     // Guardamos el estado de la cámara cada 2 segundos
     // (o cuando cambie) para tener persistencia en caso de reinicio o fallo)
-    if (now - last_persistence_update > 2000) {   // cada 60 segundos
+    if (now - last_persistence_update > 2000) {   // cada 2 segundos
         save_status_camera();
         last_persistence_update = now;
     }
