@@ -24,6 +24,7 @@ class Device(BaseModel):
     type: TypeDevice
     target: list[TargetsOptions]
     verification_code: str
+    chip_id: str
 
 class ListDevices(BaseModel):
     devices: list[Device]
