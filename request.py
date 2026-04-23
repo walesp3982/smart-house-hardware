@@ -11,22 +11,21 @@ class DeviceRequest(BaseModel):
     uuid: str
     type: str
     activation_code: str
+    chip_id: str   
 
     @staticmethod
     def from_entity(entity: Device) -> "DeviceRequest":
         return DeviceRequest(
             uuid=entity.uuid,
             activation_code=entity.verification_code,
-            type=entity.type.value
+            type=entity.type.value,
+            chip_id=entity.chip_id   # <-- se llena desde la entidad Device
         )
     
 class DeviceCreatedResponse(BaseModel):
     message: str
 
 def building_base_url():
-    """
-    Creamos la url donde vamos a guardar la url
-    """
     app_setting = AppSettings() # pyright: ignore[reportCallIssue]
     host: str = app_setting.host
     return urlunparse(
@@ -47,7 +46,7 @@ class DeviceCannotCreatedException(Exception):
 def post_device_api(device: DeviceRequest, url: str, client: httpx.Client) -> DeviceCreatedResponse:
     response = client.post(
         url="/devices",
-        json=device.model_dump()
+        json=device.model_dump()   # <-- ahora incluye chip_id automáticamente
     )
 
     if(response.status_code == 200):

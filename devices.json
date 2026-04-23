@@ -5,6 +5,7 @@
       "uuid": "d2831400-bf96-4bb8-9175-fbe3a5ac47b5",
       "type": "camera",
       "verification_code": "XZ0D6L",
+      "chip_id": "espcam-abc123",
       "target": [
         "esp32cam"
       ]
@@ -14,6 +15,7 @@
       "uuid": "2b55ccca-ec7e-41de-ab8c-eaa2a0f7de91",
       "type": "door",
       "verification_code": "GFQXNL",
+      "chip_id": "esp32-abc123",
       "target": [
         "esp32"
       ]
@@ -23,6 +25,7 @@
       "uuid": "a6ffdd49-ab85-4393-8f21-0f74ff5cd5ad",
       "type": "door",
       "verification_code": "SRW6KK",
+      "chip_id": "esp32-abc123",
       "target": [
         "esp32"
       ]
@@ -32,6 +35,7 @@
       "uuid": "d9cf9fea-f6f4-45d0-94a2-6b425cddde3a",
       "type": "door",
       "verification_code": "A887XH",
+      "chip_id": "esp32-abc123",
       "target": [
         "esp32"
       ]
@@ -41,6 +45,7 @@
       "uuid": "8bc250eb-393f-4a25-82db-793c3c65d89f",
       "type": "light",
       "verification_code": "AD8QD8",
+      "chip_id": "esp32-abc123",
       "target": [
         "esp32"
       ]
@@ -50,6 +55,7 @@
       "uuid": "750b4b38-55bc-468a-9b08-f0ec8bacc44e",
       "type": "light",
       "verification_code": "9DQ1H9",
+      "chip_id": "esp32-abc123",
       "target": [
         "esp32"
       ]
@@ -59,6 +65,7 @@
       "uuid": "ed91389c-cee0-4b9b-ad74-dcae0b5f25ab",
       "type": "light",
       "verification_code": "61U9AE",
+      "chip_id": "esp32-abc123",
       "target": [
         "esp32"
       ]
@@ -68,6 +75,7 @@
       "uuid": "fd5e8be1-bff7-4067-972b-7357b2ed2c03",
       "type": "light",
       "verification_code": "N7B74M",
+      "chip_id": "esp32-abc123",
       "target": [
         "esp32"
       ]
@@ -77,6 +85,7 @@
       "uuid": "73724302-3a02-407f-be98-2c1ddd3d4931",
       "type": "thermostat",
       "verification_code": "KLFVCD",
+      "chip_id": "esp32-abc123",
       "target": [
         "esp32"
       ]
@@ -86,6 +95,7 @@
       "uuid": "454fd10f-65e2-4585-9afb-92ba7816e3eb",
       "type": "movement",
       "verification_code": "F4UNXW",
+      "chip_id": "esp32-abc123",
       "target": [
         "esp32"
       ]
