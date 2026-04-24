@@ -19,7 +19,7 @@ static PubSubClient mqtt(wifiClient);
 // ── Publicar estado actual ──────────────────────────────────────────────────
 void mqtt_publish_state(bool camera_active, const char* stream_url) {
     JsonDocument doc;
-    doc["state"]      = camera_active ? "on" : "off";
+    doc["value"]      = camera_active ? "on" : "off";
     doc["stream_url"] = camera_active ? stream_url : "";
     doc["ip"]         = WiFi.localIP().toString();
 
